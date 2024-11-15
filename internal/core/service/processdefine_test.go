@@ -2,7 +2,6 @@ package service
 
 import (
 	"testing"
-	"workflow/internal/core/store"
 )
 
 func TestCreateProcessDefine(t *testing.T) {
@@ -115,7 +114,7 @@ func TestCreateProcessDefine(t *testing.T) {
 			}
 		]
 	}`
-	processDefine, err := NewProcessDefine(str, store.GetProcessDefineStore())
+	processDefine, err := NewProcessDefine(str)
 	if err != nil {
 		t.Fatal(err)
 	}

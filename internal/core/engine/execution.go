@@ -217,6 +217,9 @@ func (e *Execution) executeAction(action *base.Action) error {
 	}
 	switch action.ActionType {
 	case constants.HTTPCALLED:
+		/*这里暂时不处理返回内容，如果要处理，对e进行修改，需要加锁
+		同时e的变量被修改，可能会导致多个action执行时，变量内容不同，
+		使用action能力需注意*/
 		_, err := utils.HttpDo(action.HttpAction.Url, action.HttpAction.Method, action.Params,
 			utils.WithHeaders(action.HttpAction.Headers),
 			utils.WithTimeout(action.HttpAction.Timeout))

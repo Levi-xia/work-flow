@@ -14,10 +14,10 @@ type ProcessInstance struct {
 }
 
 // 创建实例
-func NewProcessInstance(define *ProcessDefine, variables map[string]interface{}, store store.ProcessInstanceStore) (*ProcessInstance, error) {
+func NewProcessInstance(define *ProcessDefine, variables map[string]interface{}) (*ProcessInstance, error) {
 	instance := &ProcessInstance{
 		Define: define,
-		Store:  store,
+		Store:  store.GetProcessInstanceStore(),
 		Meta: &model.ProcessInstanceModel{
 			ProcessDefineID: define.Meta.ID,
 			Status:          constants.PROCESSINSTANCESTATUSDOING,

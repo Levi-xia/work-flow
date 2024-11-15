@@ -21,7 +21,7 @@ func CreateProcessDefine(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
-	processDefine, err := service.NewProcessDefine(form.Content, store.GetProcessDefineStore())
+	processDefine, err := service.NewProcessDefine(form.Content)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
@@ -59,7 +59,7 @@ func StartProcessInstance(c *gin.Context) {
 	if form.Variables == nil {
 		form.Variables = make(map[string]interface{})
 	}
-	instance, err := service.NewProcessInstance(define, form.Variables, store.GetProcessInstanceStore())
+	instance, err := service.NewProcessInstance(define, form.Variables)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return

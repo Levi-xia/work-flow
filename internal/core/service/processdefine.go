@@ -14,7 +14,7 @@ type ProcessDefine struct {
 }
 
 // 创建流程定义
-func NewProcessDefine(content string, store store.ProcessDefineStore) (*ProcessDefine, error) {
+func NewProcessDefine(content string) (*ProcessDefine, error) {
 	// 解析
 	process, err := parser.Parser2Process(content)
 	if err != nil {
@@ -23,7 +23,7 @@ func NewProcessDefine(content string, store store.ProcessDefineStore) (*ProcessD
 	code := process.Code
 	name := process.Name
 
-	processDefineModel, err := getLatestVersion(code, store)
+	processDefineModel, err := getLatestVersion(code, store.GetProcessDefineStore())
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func NewProcessDefine(content string, store store.ProcessDefineStore) (*ProcessD
 			Content: content,
 			Version: 1,
 		},
-		Store: store,
+		Store: store.GetProcessDefineStore(),
 	}
 	if processDefineModel != nil {
 		define.Meta.Version = processDefineModel.Version + 1

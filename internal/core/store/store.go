@@ -5,9 +5,9 @@ import (
 	"log"
 	"workflow/internal/core/constants"
 	"workflow/internal/core/model"
+	"workflow/internal/serctx"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 )
 
 // 包含初始化、取用逻辑
@@ -20,8 +20,6 @@ type store struct {
 // 全局store实例
 var GlobalStore *store
 
-var db *sqlx.DB
-
 func init() {
 	log.Println("init store")
 	GlobalStore = &store{
@@ -29,11 +27,6 @@ func init() {
 		processInstanceStore: &MySQLProcessInstanceStore{},
 		processTaskStore:     &MySQLProcessTaskStore{},
 	}
-	// 初始化数据库连接
-	dsn := "root:Mysqlxwy9264@tcp(127.0.0.1:3306)/workflow?charset=utf8mb4&parseTime=True"
-	db = sqlx.MustConnect("mysql", dsn)
-	db.SetMaxOpenConns(20)
-	db.SetMaxIdleConns(10)
 }
 
 // 获取定义存储
@@ -55,11 +48,11 @@ type MySQLProcessDefineStore struct{}
 
 func (s *MySQLProcessDefineStore) GetProcessDefine(id int) (*model.ProcessDefineModel, error) {
 	define := &model.ProcessDefineModel{}
-	err := db.Get(define, "SELECT * FROM process_define WHERE id = ?", id)
+	err := serctx.SerCtx.Db.Get(define, "SELECT * FROM process_define WHERE id = ?", id)
 	return define, err
 }
 func (s *MySQLProcessDefineStore) CreateProcessDefine(meta *model.ProcessDefineModel) (int, error) {
-	result, err := db.NamedExec(`
+	result, err := serctx.SerCtx.Db.NamedExec(`
 		INSERT INTO process_define (code, name, version, content)
 		VALUES (:code, :name, :version, :content)`, meta)
 	if err != nil {
@@ -71,7 +64,7 @@ func (s *MySQLProcessDefineStore) CreateProcessDefine(meta *model.ProcessDefineM
 
 func (s *MySQLProcessDefineStore) GetProcessDefinesByCode(code string) ([]*model.ProcessDefineModel, error) {
 	var defines []*model.ProcessDefineModel
-	err := db.Select(&defines, "SELECT * FROM process_define WHERE code = ?", code)
+	err := serctx.SerCtx.Db.Select(&defines, "SELECT * FROM process_define WHERE code = ?", code)
 	return defines, err
 }
 
@@ -82,7 +75,7 @@ func (s *MySQLProcessInstanceStore) CreateProcessInstance(meta *model.ProcessIns
 	if err != nil {
 		return 0, err
 	}
-	result, err := db.Exec(`
+	result, err := serctx.SerCtx.Db.Exec(`
 		INSERT INTO process_instance (process_define_id, status, variables)
 		VALUES (?, ?, ?)`, meta.ProcessDefineID, meta.Status, string(variables))
 	if err != nil {
@@ -92,21 +85,21 @@ func (s *MySQLProcessInstanceStore) CreateProcessInstance(meta *model.ProcessIns
 	return int(id), err
 }
 func (s *MySQLProcessInstanceStore) FinishProcessInstance(id int) error {
-	_, err := db.Exec("UPDATE process_instance SET status = ? WHERE id = ?", constants.PROCESSINSTANCESTATUSFINISH, id)
+	_, err := serctx.SerCtx.Db.Exec("UPDATE process_instance SET status = ? WHERE id = ?", constants.PROCESSINSTANCESTATUSFINISH, id)
 	return err
 }
 func (s *MySQLProcessInstanceStore) CancelProcessInstance(id int) error {
-	_, err := db.Exec("UPDATE process_instance SET status = ? WHERE id = ?", constants.PROCESSINSTANCESTATUSCANCEL, id)
+	_, err := serctx.SerCtx.Db.Exec("UPDATE process_instance SET status = ? WHERE id = ?", constants.PROCESSINSTANCESTATUSCANCEL, id)
 	return err
 }
 func (s *MySQLProcessInstanceStore) GetProcessInstance(id int) (*model.ProcessInstanceModel, error) {
 	// 创建一个临时结构体来接收原始数据
 	type tempInstance struct {
 		*model.ProcessInstanceModel
-		Variables string `db:"variables"`
+		Variables string `serctx.SerCtx.Db:"variables"`
 	}
 	tmp := &tempInstance{ProcessInstanceModel: &model.ProcessInstanceModel{}}
-	err := db.Get(tmp, "SELECT * FROM process_instance WHERE id = ?", id)
+	err := serctx.SerCtx.Db.Get(tmp, "SELECT * FROM process_instance WHERE id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +116,7 @@ func (s *MySQLProcessInstanceStore) UpdateProcessInstanceVariables(id int, varia
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("UPDATE process_instance SET variables = ? WHERE id = ?", string(variablesBytes), id)
+	_, err = serctx.SerCtx.Db.Exec("UPDATE process_instance SET variables = ? WHERE id = ?", string(variablesBytes), id)
 	return err
 }
 
@@ -134,7 +127,7 @@ func (s *MySQLProcessTaskStore) CreateProcessTask(meta *model.ProcessTaskModel) 
 	if err != nil {
 		return 0, err
 	}
-	result, err := db.Exec(`
+	result, err := serctx.SerCtx.Db.Exec(`
 		INSERT INTO process_task (process_instance_id, code, name, status, variables)
 		VALUES (?, ?, ?, ?, ?)`, meta.ProcessInstanceID, meta.Code, meta.Name, meta.Status, string(variables))
 	if err != nil {
@@ -148,17 +141,17 @@ func (s *MySQLProcessTaskStore) FinishProcessTask(id int, variables map[string]i
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("UPDATE process_task SET status = ?, variables = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, string(variablesBytes), id)
+	_, err = serctx.SerCtx.Db.Exec("UPDATE process_task SET status = ?, variables = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, string(variablesBytes), id)
 	return err
 }
 func (s *MySQLProcessTaskStore) GetProcessTask(id int) (*model.ProcessTaskModel, error) {
 	// 创建一个临时结构体来接收原始数据
 	type tempTask struct {
 		*model.ProcessTaskModel
-		Variables string `db:"variables"`
+		Variables string `serctx.SerCtx.Db:"variables"`
 	}
 	tmp := &tempTask{ProcessTaskModel: &model.ProcessTaskModel{}}
-	if err := db.Get(tmp, "SELECT * FROM process_task WHERE id = ?", id); err != nil {
+	if err := serctx.SerCtx.Db.Get(tmp, "SELECT * FROM process_task WHERE id = ?", id); err != nil {
 		return nil, err
 	}
 	// 将 JSON 字符串解析为 map
@@ -173,10 +166,10 @@ func (s *MySQLProcessTaskStore) GetRunningTasks(instanceID int) ([]*model.Proces
 	// 创建一个临时结构体来接收原始数据
 	type tempTask struct {
 		*model.ProcessTaskModel
-		Variables string `db:"variables"`
+		Variables string `serctx.SerCtx.Db:"variables"`
 	}
 	var tasks []*tempTask
-	err := db.Select(&tasks, "SELECT * FROM process_task WHERE process_instance_id = ? AND status = ?", instanceID, constants.PROCESSTASKSTATUSDOING)
+	err := serctx.SerCtx.Db.Select(&tasks, "SELECT * FROM process_task WHERE process_instance_id = ? AND status = ?", instanceID, constants.PROCESSTASKSTATUSDOING)
 	if err != nil {
 		return nil, err
 	}
