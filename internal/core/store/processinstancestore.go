@@ -8,6 +8,5 @@ type ProcessInstanceStore interface {
 	FinishProcessInstance(id int) error
 	CancelProcessInstance(id int) error
 	GetProcessInstance(id int) (*model.ProcessInstanceModel, error)
-	AddVariables(id int, k string, v interface{}) error
-	DeleteVariables(id int, variables ...string) error
+	UpdateProcessInstanceVariables(id int, variables map[string]interface{}) error
 }

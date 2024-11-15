@@ -118,20 +118,12 @@ func (s *MySQLProcessInstanceStore) GetProcessInstance(id int) (*model.ProcessIn
 	}
 	return tmp.ProcessInstanceModel, nil
 }
-func (s *MySQLProcessInstanceStore) AddVariables(id int, k string, v interface{}) error {
-	_, err := db.Exec(`
-		UPDATE process_instance 
-		SET variables = JSON_SET(COALESCE(variables, '{}'), ?, CAST(? AS JSON))
-		WHERE id = ?`, "$."+k, v, id)
-	return err
-}
-func (s *MySQLProcessInstanceStore) DeleteVariables(id int, variables ...string) error {
-	query := `UPDATE process_instance SET variables = JSON_REMOVE(variables`
-	for _, k := range variables {
-		query += `, '$."` + k + `"'`
+func (s *MySQLProcessInstanceStore) UpdateProcessInstanceVariables(id int, variables map[string]interface{}) error {
+	variablesBytes, err := json.Marshal(variables)
+	if err != nil {
+		return err
 	}
-	query += `), updated_at = NOW() WHERE id = ?`
-	_, err := db.Exec(query, id)
+	_, err = db.Exec("UPDATE process_instance SET variables = ? WHERE id = ?", string(variablesBytes), id)
 	return err
 }
 
@@ -151,8 +143,12 @@ func (s *MySQLProcessTaskStore) CreateProcessTask(meta *model.ProcessTaskModel) 
 	id, err := result.LastInsertId()
 	return int(id), err
 }
-func (s *MySQLProcessTaskStore) FinishProcessTask(id int) error {
-	_, err := db.Exec("UPDATE process_task SET status = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, id)
+func (s *MySQLProcessTaskStore) FinishProcessTask(id int, variables map[string]interface{}) error {
+	variablesBytes, err := json.Marshal(variables)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("UPDATE process_task SET status = ?, variables = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, string(variablesBytes), id)
 	return err
 }
 func (s *MySQLProcessTaskStore) GetProcessTask(id int) (*model.ProcessTaskModel, error) {

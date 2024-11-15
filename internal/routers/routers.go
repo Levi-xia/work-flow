@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"net/http"
 	"workflow/internal/handler"
 
 	"github.com/gin-gonic/gin"
@@ -12,9 +11,7 @@ func SetRoutes(r *gin.Engine) {
 	// 动作路由
 	actionRouter := r.Group("workflow/action/v1")
 	{
-		actionRouter.GET("/sendSms", gin.HandlerFunc(func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"message": "sendSms"})
-		}))
+		actionRouter.GET("/sendSms", handler.SendSms)
 	}
 
 	// 流程路由

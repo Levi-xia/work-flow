@@ -33,9 +33,8 @@ type EdgeParser struct {
 type HttpActionParser struct {
 	Url     string
 	Method  string
-	Timeout time.Duration
+	Timeout int
 	Headers map[string]string
-	Async   bool
 }
 
 type ActionParser struct {
@@ -88,7 +87,7 @@ func Parser2Process(content string) (*process.Process, error) {
 				HttpAction: base.HttpAction{
 					Url:     nodeParser.Properties.PreHook.HttpAction.Url,
 					Method:  nodeParser.Properties.PreHook.HttpAction.Method,
-					Timeout: nodeParser.Properties.PreHook.HttpAction.Timeout,
+					Timeout: time.Duration(nodeParser.Properties.PreHook.HttpAction.Timeout) * time.Millisecond,
 					Headers: nodeParser.Properties.PreHook.HttpAction.Headers,
 				},
 			}
@@ -99,7 +98,7 @@ func Parser2Process(content string) (*process.Process, error) {
 				HttpAction: base.HttpAction{
 					Url:     interceptor.HttpAction.Url,
 					Method:  interceptor.HttpAction.Method,
-					Timeout: interceptor.HttpAction.Timeout,
+					Timeout: time.Duration(interceptor.HttpAction.Timeout) * time.Millisecond,
 					Headers: interceptor.HttpAction.Headers,
 				},
 			})
@@ -110,7 +109,7 @@ func Parser2Process(content string) (*process.Process, error) {
 				HttpAction: base.HttpAction{
 					Url:     interceptor.HttpAction.Url,
 					Method:  interceptor.HttpAction.Method,
-					Timeout: interceptor.HttpAction.Timeout,
+					Timeout: time.Duration(interceptor.HttpAction.Timeout) * time.Millisecond,
 					Headers: interceptor.HttpAction.Headers,
 				},
 			})

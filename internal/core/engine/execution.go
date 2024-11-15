@@ -69,56 +69,34 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 	if err != nil {
 		return err
 	}
-	// instance公共变量赋值
-	for k, v := range e.Instance.Meta.Variables {
+	// task的变量赋值
+	for k, v := range task.Meta.Variables {
 		if _, ok := e.Variables[k]; !ok {
 			e.Variables[k] = v
 		}
 	}
 	// 前置拦截器
 	if node.PreInterceptors != nil {
-		for _, interceptor := range node.PreInterceptors {
-			if err := e.executeAction(interceptor); err != nil {
-				return err
-			}
-		}
-	}
-	// 执行边的execute逻辑
-	errCh := make(chan error)
-	go func() {
-		var wg sync.WaitGroup
-		for _, edge := range node.Outputs {
-			wg.Add(1)
-			go func(edge *base.Edge) {
-				defer wg.Done()
-				defer func() {
-					if r := recover(); r != nil {
-						errCh <- fmt.Errorf("panic in edge execution: %v", r)
-					}
-				}()
-				if err := e.executeEdge(edge); err != nil {
-					errCh <- err
-				}
-			}(edge)
-		}
-		wg.Wait()
-		close(errCh)
-	}()
-	for err := range errCh {
-		if err != nil {
+		if err := e.executeActions(node.PreInterceptors); err != nil {
 			return err
 		}
 	}
 	// 结束任务写库
-	if err := task.Store.FinishProcessTask(task.Meta.ID); err != nil {
+	if err := task.Store.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
+		return err
+	}
+	// 执行边的execute逻辑
+	if err := e.executeEdges(node.Outputs); err != nil {
+		return err
+	}
+	// 更新instance的变量
+	if err := e.Instance.Store.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Variables); err != nil {
 		return err
 	}
 	// 后置拦截器
 	if node.PostInterceptors != nil {
-		for _, interceptor := range node.PostInterceptors {
-			if err := e.executeAction(interceptor); err != nil {
-				return err
-			}
+		if err := e.executeActions(node.PostInterceptors); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -126,13 +104,22 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 
 // 执行开始节点
 func (e *Execution) executeStartNode(node *base.Node) error {
-	return e.runOutputEdges(node.Outputs)
+	return e.executeEdges(node.Outputs)
 }
 
 // 创建任务
 func (e *Execution) createTask(node *base.Node) error {
 	if e.Instance == nil {
 		return errors.New("instance is nil")
+	}
+	if e.Variables == nil {
+		e.Variables = make(map[string]interface{})
+	}
+	// 把instance的变量赋值到Variables，但是Variables已经存在的变量不覆盖
+	for k, v := range e.Instance.Meta.Variables {
+		if _, exists := e.Variables[k]; !exists {
+			e.Variables[k] = v
+		}
 	}
 	if _, err := service.NewProcessTask(e.Instance, node.Code, node.Name, e.Variables); err != nil {
 		return err
@@ -147,7 +134,7 @@ func (e *Execution) createTask(node *base.Node) error {
 }
 
 // 批量执行输出边
-func (e *Execution) runOutputEdges(edges []*base.Edge) error {
+func (e *Execution) executeEdges(edges []*base.Edge) error {
 	errCh := make(chan error)
 	go func() {
 		var wg sync.WaitGroup
@@ -203,7 +190,7 @@ func (e *Execution) executeJoinNode(node *base.Node) error {
 	if len(runningTasks) >= 0 {
 		return nil
 	}
-	return e.runOutputEdges(node.Outputs)
+	return e.executeEdges(node.Outputs)
 }
 
 // 结束实例
@@ -216,12 +203,51 @@ func (e *Execution) finishInstance() error {
 
 // 执行节点动作
 func (e *Execution) executeAction(action *base.Action) error {
+	if action.Params == nil {
+		action.Params = make(map[string]interface{})
+	}
+	// 将Variables中的变量复制到Params,但不覆盖已有值
+	for k, v := range e.Variables {
+		if _, exists := action.Params[k]; !exists {
+			action.Params[k] = v
+		}
+	}
 	switch action.ActionType {
 	case constants.HTTPCALLED:
-		_, err := utils.HttpDo(action.HttpAction.Url, action.HttpAction.Method,
+		_, err := utils.HttpDo(action.HttpAction.Url, action.HttpAction.Method, action.Params,
 			utils.WithHeaders(action.HttpAction.Headers),
 			utils.WithTimeout(action.HttpAction.Timeout))
 		return err
+	}
+	return nil
+}
+
+// 批量执行action
+func (e *Execution) executeActions(actions []*base.Action) error {
+	errCh := make(chan error)
+	go func() {
+		var wg sync.WaitGroup
+		for _, action := range actions {
+			wg.Add(1)
+			go func(action *base.Action) {
+				defer wg.Done()
+				defer func() {
+					if r := recover(); r != nil {
+						errCh <- fmt.Errorf("panic in action execution: %v", r)
+					}
+				}()
+				if err := e.executeAction(action); err != nil {
+					errCh <- err
+				}
+			}(action)
+		}
+		wg.Wait()
+		close(errCh)
+	}()
+	for err := range errCh {
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
