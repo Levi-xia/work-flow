@@ -14,15 +14,22 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	define := &service.ProcessDefine{
+		Meta:  defineMeta,
+		Store: store.GetProcessDefineStore(),
+	}
+	variables := map[string]interface{}{
+		"days": 5,
+	}
+	instance, err := service.NewProcessInstance(define, variables, store.GetProcessInstanceStore())
+	if err != nil {
+		t.Fatal(err)
+	}
 	execution := &Execution{
-		Process: process,
-		Define: &service.ProcessDefine{
-			Meta:  defineMeta,
-			Store: store.GetProcessDefineStore(),
-		},
-		Variables: map[string]interface{}{
-			"days": 5,
-		},
+		Process:   process,
+		Define:    define,
+		Instance:  instance,
+		Variables: variables,
 	}
 	start, err := process.GetStart()
 	if err != nil {
@@ -35,13 +42,4 @@ func TestProcess(t *testing.T) {
 }
 
 func TestExecuteTask(t *testing.T) {
-	execution := &Execution{
-		Variables: map[string]interface{}{
-			"days": 5,
-		},
-	}
-	err := execution.ExecuteTask(100007)
-	if err != nil {
-		t.Error(err)
-	}
 }

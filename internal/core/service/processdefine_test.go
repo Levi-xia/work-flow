@@ -115,7 +115,7 @@ func TestCreateProcessDefine(t *testing.T) {
 			}
 		]
 	}`
-	processDefine, err := NewProcessDefine("leave", "请假", str, store.GetProcessDefineStore())
+	processDefine, err := NewProcessDefine(str, store.GetProcessDefineStore())
 	if err != nil {
 		t.Fatal(err)
 	}

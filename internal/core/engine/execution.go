@@ -7,10 +7,8 @@ import (
 	"sync"
 	"workflow/internal/core/base"
 	"workflow/internal/core/constants"
-	"workflow/internal/core/parser"
 	"workflow/internal/core/process"
 	"workflow/internal/core/service"
-	"workflow/internal/core/store"
 	"workflow/internal/utils"
 
 	"github.com/caibirdme/yql"
@@ -49,41 +47,20 @@ func (e *Execution) ExecuteNode(node *base.Node) error {
 }
 
 // 执行任务
-func (e *Execution) ExecuteTask(taskId int) error {
-	var (
-		task     *service.ProcessTask     = &service.ProcessTask{}
-		instance *service.ProcessInstance = &service.ProcessInstance{}
-		define   *service.ProcessDefine   = &service.ProcessDefine{}
-		err      error
-	)
+func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
+	if e.Define == nil {
+		return errors.New("define is nil")
+	}
+	if e.Instance == nil {
+		return errors.New("instance is nil")
+	}
 	// 这里执行权限的判断 Todo
 
-	// 获取store
-	define.Store, instance.Store, task.Store = store.GetProcessDefineStore(), store.GetProcessInstanceStore(), store.GetProcessTaskStore()
-	// 拿到定义
-	if task.Meta, err = task.Store.GetProcessTask(taskId); err != nil {
-		return err
-	}
-	// 获取instance
-	if instance.Meta, err = instance.Store.GetProcessInstance(task.Meta.ProcessInstanceID); err != nil {
-		return err
-	}
-	// 获取define
-	if define.Meta, err = define.Store.GetProcessDefine(instance.Meta.ProcessDefineID); err != nil {
-		return err
-	}
-	// 获取Process
-	if e.Process, err = parser.Parser2Process(define.Meta.Content); err != nil {
-		return err
-	}
-	instance.Define = define
-	// task.Instance = instance
-	e.Instance = instance
-
 	// 任务、实例状态校验
-	if instance.Meta.Status != constants.PROCESSINSTANCESTATUSDOING {
+	if e.Instance.Meta.Status != constants.PROCESSINSTANCESTATUSDOING {
 		return errors.New("instance status is not doing")
 	}
+	// 任务状态校验
 	if task.Meta.Status != constants.PROCESSTASKSTATUSDOING {
 		return errors.New("task status is not doing")
 	}
@@ -93,7 +70,7 @@ func (e *Execution) ExecuteTask(taskId int) error {
 		return err
 	}
 	// instance公共变量赋值
-	for k, v := range instance.Meta.Variables {
+	for k, v := range e.Instance.Meta.Variables {
 		if _, ok := e.Variables[k]; !ok {
 			e.Variables[k] = v
 		}
@@ -149,14 +126,6 @@ func (e *Execution) ExecuteTask(taskId int) error {
 
 // 执行开始节点
 func (e *Execution) executeStartNode(node *base.Node) error {
-	if e.Define == nil {
-		return errors.New("define is nil")
-	}
-	var err error
-	// 创建实例
-	if e.Instance, err = service.NewProcessInstance(e.Define, e.Variables, store.GetProcessInstanceStore()); err != nil {
-		return err
-	}
 	return e.runOutputEdges(node.Outputs)
 }
 
@@ -165,7 +134,7 @@ func (e *Execution) createTask(node *base.Node) error {
 	if e.Instance == nil {
 		return errors.New("instance is nil")
 	}
-	if _, err := service.NewProcessTask(e.Instance,node.Code, node.Name, e.Variables); err != nil {
+	if _, err := service.NewProcessTask(e.Instance, node.Code, node.Name, e.Variables); err != nil {
 		return err
 	}
 	// 执行前置拦截器

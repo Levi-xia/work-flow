@@ -3,6 +3,7 @@ package service
 import (
 	"sort"
 	"workflow/internal/core/model"
+	"workflow/internal/core/parser"
 	"workflow/internal/core/store"
 	"workflow/internal/utils"
 )
@@ -13,7 +14,15 @@ type ProcessDefine struct {
 }
 
 // 创建流程定义
-func NewProcessDefine(code, name, content string, store store.ProcessDefineStore) (*ProcessDefine, error) {
+func NewProcessDefine(content string, store store.ProcessDefineStore) (*ProcessDefine, error) {
+	// 解析
+	process, err := parser.Parser2Process(content)
+	if err != nil {
+		return nil, err
+	}
+	code := process.Code
+	name := process.Name
+
 	processDefineModel, err := getLatestVersion(code, store)
 	if err != nil {
 		return nil, err
