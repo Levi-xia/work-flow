@@ -90,7 +90,10 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 		return err
 	}
 	// 更新instance的变量
-	if err := e.Instance.Store.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Variables); err != nil {
+	for k, v := range e.Variables {
+		e.Instance.Meta.Variables[k] = v
+	}
+	if err := e.Instance.Store.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Instance.Meta.Variables); err != nil {
 		return err
 	}
 	// 后置拦截器
