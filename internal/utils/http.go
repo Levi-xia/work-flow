@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	netUrl "net/url"
 	"strings"
@@ -35,7 +36,7 @@ func WithHeaders(headers map[string]string) HttpOption {
 }
 
 // 发送HTTP请求
-func HttpDo(url string, method string, params map[string]interface{}, opts ...HttpOption) (*http.Response, error) {
+func HttpDo(url string, method string, params map[string]interface{}, opts ...HttpOption) ([]byte, error) {
 	// 默认配置
 	req := &httpRequest{
 		client:  &http.Client{},
@@ -99,5 +100,9 @@ func HttpDo(url string, method string, params map[string]interface{}, opts ...Ht
 	}
 
 	// 发送请求
-	return req.client.Do(httpReq)
+	response, err := req.client.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	return io.ReadAll(response.Body)
 }

@@ -6,22 +6,21 @@ import (
 )
 
 type ActionDefineBo struct {
-	ID           int            `json:"id"`
-	Name         string         `json:"name"`
-	Code         string         `json:"code"`
-	Version      string         `json:"version"`
-	Protocol     string         `json:"protocol"`
-	Content      ActionContent  `json:"content"`
-	InputStructs []ParamsStruct `json:"input_structs"`
-	OutputChecks []OutputCheck  `json:"output_checks"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
+	ID           int                      `json:"id"`
+	Name         string                   `json:"name"`
+	Code         string                   `json:"code"`
+	Version      int                      `json:"version"`
+	Protocol     constants.ActionProtocol `json:"protocol"`
+	Content      ActionContent            `json:"content"`
+	InputStructs []ParamsStruct           `json:"input_structs"`
+	OutputChecks []OutputCheck            `json:"output_checks"`
+	CreatedAt    time.Time                `json:"created_at"`
+	UpdatedAt    time.Time                `json:"updated_at"`
 }
 
 type ActionRecordBo struct {
 	ID                int                    `json:"id"`
 	ActionDefineID    int                    `json:"action_define_id"`
-	ProcessInstanceID int                    `json:"process_instance_id"`
 	ProcessTaskID     int                    `json:"process_task_id"`
 	Input             map[string]interface{} `json:"input"`
 	Output            map[string]interface{} `json:"output"`
@@ -47,5 +46,6 @@ type ActionContent struct {
 type HttpAction struct {
 	Url     string               `json:"url"`
 	Method  constants.HttpMethod `json:"method"`
+	Headers map[string]string    `json:"headers"`
 	Timeout int                  `json:"timeout"`
 }
