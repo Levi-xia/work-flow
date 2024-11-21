@@ -82,7 +82,7 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 		}
 	}
 	// 结束任务写库
-	if err := task.Store.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
+	if err := service.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
 		return err
 	}
 	// 执行边的execute逻辑
@@ -93,7 +93,7 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 	for k, v := range e.Variables {
 		e.Instance.Meta.Variables[k] = v
 	}
-	if err := e.Instance.Store.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Instance.Meta.Variables); err != nil {
+	if err := service.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Instance.Meta.Variables); err != nil {
 		return err
 	}
 	// 后置拦截器
@@ -201,7 +201,7 @@ func (e *Execution) finishInstance() error {
 	if e.Instance == nil {
 		return errors.New("instance is nil")
 	}
-	return e.Instance.FinishProcessInstance()
+	return service.FinishProcessInstance(e.Instance.Meta.ID)
 }
 
 // 执行节点动作

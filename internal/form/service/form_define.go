@@ -12,13 +12,14 @@ type FormDefine struct {
 	Store store.FormDefineStore
 }
 
-func NewFormDefine(code, formStructure, componentStructure string, store store.FormDefineStore) (*FormDefine, error) {
+func NewFormDefine(name, code, formStructure, componentStructure string, store store.FormDefineStore) (*FormDefine, error) {
 	latestVersion, err := getLatestVersion(code, store)
 	if err != nil {
 		return nil, err
 	}
 	define := &FormDefine{
 		Meta: &model.FormDefineModel{
+			Name:               name,
 			Code:               code,
 			Version:            1,
 			FormStructure:      formStructure,

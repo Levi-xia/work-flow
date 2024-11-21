@@ -4,19 +4,17 @@ import (
 	"testing"
 	"workflow/internal/core/parser"
 	"workflow/internal/core/service"
-	"workflow/internal/core/store"
 )
 
 // 测试完整流程
 func TestProcess(t *testing.T) {
-	defineMeta, _ := store.GetProcessDefineStore().GetProcessDefine(100001)
+	defineMeta, _ := service.GetProcessDefine(100001)
 	process, err := parser.Parser2Process(defineMeta.Content)
 	if err != nil {
 		t.Fatal(err)
 	}
 	define := &service.ProcessDefine{
 		Meta:  defineMeta,
-		Store: store.GetProcessDefineStore(),
 	}
 	variables := map[string]interface{}{
 		"days": 5,

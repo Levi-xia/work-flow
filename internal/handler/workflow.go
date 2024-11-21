@@ -7,7 +7,6 @@ import (
 	"workflow/internal/core/parser"
 	"workflow/internal/core/process"
 	"workflow/internal/core/service"
-	"workflow/internal/core/store"
 	"workflow/internal/dto"
 
 	"github.com/gin-gonic/gin"
@@ -42,7 +41,7 @@ func StartProcessInstance(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
-	defineMeta, err := store.GetProcessDefineStore().GetProcessDefine(form.ProcessDefineId)
+	defineMeta, err := service.GetProcessDefine(form.ProcessDefineId)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
@@ -53,8 +52,7 @@ func StartProcessInstance(c *gin.Context) {
 		return
 	}
 	define := &service.ProcessDefine{
-		Meta:  defineMeta,
-		Store: store.GetProcessDefineStore(),
+		Meta: defineMeta,
 	}
 	if form.Variables == nil {
 		form.Variables = make(map[string]interface{})
@@ -75,8 +73,7 @@ func StartProcessInstance(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}
-	err = execution.ExecuteNode(start)
-	if err != nil {
+	if err = execution.ExecuteNode(start); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}
@@ -103,20 +100,18 @@ func ExecuteTask(c *gin.Context) {
 		process  *process.Process
 		err      error
 	)
-	// 获取store
-	define.Store, instance.Store, task.Store = store.GetProcessDefineStore(), store.GetProcessInstanceStore(), store.GetProcessTaskStore()
 	// 拿到定义
-	if task.Meta, err = task.Store.GetProcessTask(form.TaskId); err != nil {
+	if task.Meta, err = service.GetProcessTask(form.TaskId); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}
 	// 获取instance
-	if instance.Meta, err = instance.Store.GetProcessInstance(task.Meta.ProcessInstanceID); err != nil {
+	if instance.Meta, err = service.GetProcessInstance(task.Meta.ProcessInstanceID); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}
 	// 获取define
-	if define.Meta, err = define.Store.GetProcessDefine(instance.Meta.ProcessDefineID); err != nil {
+	if define.Meta, err = service.GetProcessDefine(instance.Meta.ProcessDefineID); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}
@@ -127,14 +122,14 @@ func ExecuteTask(c *gin.Context) {
 	}
 	instance.Define = define
 	task.Instance = instance
+
 	e := &engine.Execution{
 		Process:   process,
 		Define:    define,
 		Instance:  instance,
 		Variables: form.Variables,
 	}
-	err = e.ExecuteTask(task)
-	if err != nil {
+	if err = e.ExecuteTask(task); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
 	}

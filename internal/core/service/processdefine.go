@@ -2,59 +2,77 @@ package service
 
 import (
 	"sort"
+	"workflow/internal/core/bo"
 	"workflow/internal/core/model"
 	"workflow/internal/core/parser"
+	"workflow/internal/core/process"
 	"workflow/internal/core/store"
 	"workflow/internal/utils"
 )
 
 type ProcessDefine struct {
-	Meta  *model.ProcessDefineModel
-	Store store.ProcessDefineStore
+	Meta  *bo.ProcessDefineBo
+	store store.ProcessDefineStore
 }
 
-// 创建流程定义
+// NewProcessDefine 用于创建一个新的流程定义
 func NewProcessDefine(content string) (*ProcessDefine, error) {
+	var (
+		err         error
+		process     *process.Process
+		define      *ProcessDefine
+		defineModel *model.ProcessDefineModel
+		defineBo    *bo.ProcessDefineBo
+	)
 	// 解析
-	process, err := parser.Parser2Process(content)
-	if err != nil {
+	if process, err = parser.Parser2Process(content); err != nil {
 		return nil, err
 	}
-	code := process.Code
-	name := process.Name
-
-	processDefineModel, err := getLatestVersion(code, store.GetProcessDefineStore())
+	// 获取最新版本
+	processDefineModel, err := getLatestVersion(process.Code)
 	if err != nil {
 		return nil, err
-	}
-	define := &ProcessDefine{
-		Meta: &model.ProcessDefineModel{
-			Code:    code,
-			Name:    name,
-			Content: content,
-			Version: 1,
-		},
-		Store: store.GetProcessDefineStore(),
-	}
-	if processDefineModel != nil {
-		define.Meta.Version = processDefineModel.Version + 1
 	}
 	// 压缩JSON
 	compactContent, err := utils.CompactJSON(content)
 	if err != nil {
 		return nil, err
 	}
-	define.Meta.Content = compactContent
+	defineModel = &model.ProcessDefineModel{
+		Code:    process.Code,
+		Name:    process.Name,
+		Content: compactContent,
+		Version: 1,
+	}
+	if processDefineModel != nil {
+		defineModel.Version = processDefineModel.Version + 1
+	}
+	// 转换为BO
+	if defineBo, err = defineModel.ToBo(); err != nil {
+		return nil, err
+	}
+	define = &ProcessDefine{
+		Meta:  defineBo,
+		store: store.GetProcessDefineStore(),
+	}
 	// 写入数据库
-	if define.Meta.ID, err = define.Store.CreateProcessDefine(define.Meta); err != nil {
+	if define.Meta.ID, err = define.store.CreateProcessDefine(defineModel); err != nil {
 		return nil, err
 	}
 	return define, nil
 }
 
+func GetProcessDefine(processDefineId int) (*bo.ProcessDefineBo, error) {
+	defineModel, err := store.GetProcessDefineStore().GetProcessDefine(processDefineId)
+	if err != nil {
+		return nil, err
+	}
+	return defineModel.ToBo()
+}
+
 // 获取最高版本的定义
-func getLatestVersion(code string, store store.ProcessDefineStore) (*model.ProcessDefineModel, error) {
-	processDefineModels, err := store.GetProcessDefinesByCode(code)
+func getLatestVersion(code string) (*model.ProcessDefineModel, error) {
+	processDefineModels, err := store.GetProcessDefineStore().GetProcessDefinesByCode(code)
 	if err != nil {
 		return nil, err
 	}
