@@ -8,10 +8,11 @@ import (
 
 type FormInstance struct {
 	Meta  *model.FormInstanceModel
-	Store store.FormInstanceStore
+	store store.FormInstanceStore
 }
 
-func NewFormInstance(formDefineID int, formData map[string]interface{}, store store.FormInstanceStore) (*FormInstance, error) {
+// 创建表单实例
+func NewFormInstance(formDefineID int, formData map[string]interface{}) (*FormInstance, error) {
 	formDataBytes, err := json.Marshal(formData)
 	if err != nil {
 		return nil, err
@@ -21,9 +22,19 @@ func NewFormInstance(formDefineID int, formData map[string]interface{}, store st
 			FormDefineID: formDefineID,
 			FormData:     string(formDataBytes),
 		},
+		store: store.GetFormInstanceStore(),
 	}
-	if formInstance.Meta.ID, err = formInstance.Store.CreateFormInstance(formInstance.Meta); err != nil {
+	if formInstance.Meta.ID, err = store.GetFormInstanceStore().CreateFormInstance(formInstance.Meta); err != nil {
 		return nil, err
 	}
 	return formInstance, nil
+}
+
+// 写入表单数据
+func UpdateFormInstanceFormData(formInstanceID int, formData map[string]interface{}) error {
+	formDataBytes, err := json.Marshal(formData)
+	if err != nil {
+		return err
+	}
+	return store.GetFormInstanceStore().UpdateFormInstanceFormData(formInstanceID, string(formDataBytes))
 }

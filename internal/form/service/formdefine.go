@@ -9,11 +9,11 @@ import (
 
 type FormDefine struct {
 	Meta  *model.FormDefineModel
-	Store store.FormDefineStore
+	store store.FormDefineStore
 }
 
-func NewFormDefine(name, code, formStructure, componentStructure string, store store.FormDefineStore) (*FormDefine, error) {
-	latestVersion, err := getLatestVersion(code, store)
+func NewFormDefine(name, code, formStructure, componentStructure string) (*FormDefine, error) {
+	latestVersion, err := getLatestVersion(code)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func NewFormDefine(name, code, formStructure, componentStructure string, store s
 			FormStructure:      formStructure,
 			ComponentStructure: componentStructure,
 		},
-		Store: store,
+		store: store.GetFormDefineStore(),
 	}
 	if latestVersion != nil {
 		define.Meta.Version = latestVersion.Version + 1
@@ -38,14 +38,14 @@ func NewFormDefine(name, code, formStructure, componentStructure string, store s
 		return nil, err
 	}
 	// 写入数据库
-	if define.Meta.ID, err = define.Store.CreateFormDefine(define.Meta); err != nil {
+	if define.Meta.ID, err = store.GetFormDefineStore().CreateFormDefine(define.Meta); err != nil {
 		return nil, err
 	}
 	return define, nil
 }
 
-func getLatestVersion(code string, store store.FormDefineStore) (*model.FormDefineModel, error) {
-	formDefineModels, err := store.GetFormDefinesByCode(code)
+func getLatestVersion(code string) (*model.FormDefineModel, error) {
+	formDefineModels, err := store.GetFormDefineStore().GetFormDefinesByCode(code)
 	if err != nil {
 		return nil, err
 	}

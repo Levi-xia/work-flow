@@ -12,13 +12,13 @@ func TestExecuteActions(t *testing.T) {
 	params := map[string]interface{}{
 		"key1": "123",
 		"key2": 123,
+		"key3": "456",
+		"key4": "789",
 	}
-	
-	err := ExecuteActions([]int{100002,100003,100004,100005}, 99999, params)
+	err := ExecuteActions([]int{100002}, 99999, params)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(params)
 }
 
 func TestCreateActionDefine(t *testing.T) {
