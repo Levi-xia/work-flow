@@ -14,6 +14,12 @@ func SetRoutes(r *gin.Engine) {
 		actionRouter.GET("/sendSms", handler.SendSms)
 	}
 
+	// 表单路由
+	formRouter := r.Group("workflow/form/v1")
+	{
+		formRouter.POST("/createFormDefine", handler.CreateFormDefine)
+	}
+
 	// 流程路由
 	processRouter := r.Group("workflow/process/v1")
 	{
