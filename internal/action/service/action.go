@@ -78,7 +78,7 @@ func execActions(actionDefines []*bo.ActionDefineBo, processTaskID int, params m
 					errChan <- fmt.Errorf("panic in action exec: %v", r)
 				}
 			}()
-			if _, err := execAction(actionDefine, processTaskID, params); err != nil {
+			if err := execAction(actionDefine, processTaskID, params); err != nil {
 				errChan <- err
 			}
 		}(actionDefine)
@@ -89,62 +89,6 @@ func execActions(actionDefines []*bo.ActionDefineBo, processTaskID int, params m
 		return err
 	}
 	return nil
-}
-
-// 执行单个action
-func execAction(actionDefine *bo.ActionDefineBo, processTaskID int, params map[string]interface{}) (interface{}, error) {
-	var (
-		err          error
-		result       []byte
-		actionParams map[string]interface{} = make(map[string]interface{})
-		resultMap    map[string]interface{} = make(map[string]interface{})
-	)
-	// 成功失败均要创建action记录
-	defer func() {
-		if err != nil {
-			resultMap = map[string]interface{}{
-				"error": err.Error(),
-			}
-		}
-		record := &bo.ActionRecordBo{
-			ActionDefineID: actionDefine.ID,
-			ProcessTaskID:  processTaskID,
-			Input:          actionParams,
-			Output:         resultMap,
-		}
-		if _, err := NewActionRecord(record); err != nil {
-			log.Println("create action record failed: ", err)
-		}
-	}()
-	if actionDefine == nil {
-		return nil, fmt.Errorf("action define is nil")
-	}
-	// 根据action定义的inputStruct从params中获取参数
-	for _, inputStruct := range actionDefine.InputStructs {
-		if value, exists := params[inputStruct.Key]; exists {
-			actionParams[inputStruct.Key] = value
-		}
-	}
-	// 执行action
-	switch actionDefine.Protocol {
-	case constants.ActionProtocolHttp:
-		httpAction := actionDefine.Content.HttpAction
-		if result, err = utils.HttpDo(httpAction.Url, string(httpAction.Method), actionParams,
-			utils.WithHeaders(httpAction.Headers),
-			utils.WithTimeout(time.Duration(httpAction.Timeout)*time.Millisecond)); err != nil {
-			return result, err
-		}
-	default:
-		return nil, fmt.Errorf("unsupported action protocol %s", actionDefine.Protocol)
-	}
-	if err := json.Unmarshal(result, &resultMap); err != nil {
-		return result, err
-	}
-	// 对执行结果进行检查
-	if err = checkOutput(actionDefine.OutputChecks, resultMap); err != nil {
-		return result, err
-	}
-	return nil, nil
 }
 
 // 检查单个参数
@@ -188,6 +132,62 @@ func checkParam(inputStruct *bo.ParamsStruct, params map[string]interface{}) err
 		default:
 			return fmt.Errorf("unsupported parameter type %s", inputStruct.Type)
 		}
+	}
+	return nil
+}
+
+// 执行单个action
+func execAction(actionDefine *bo.ActionDefineBo, processTaskID int, params map[string]interface{}) error {
+	var (
+		err          error
+		result       []byte
+		actionParams map[string]interface{} = make(map[string]interface{})
+		resultMap    map[string]interface{} = make(map[string]interface{})
+	)
+	// 成功失败均要创建action记录
+	defer func() {
+		if err != nil {
+			resultMap = map[string]interface{}{
+				"error": err.Error(),
+			}
+		}
+		record := &bo.ActionRecordBo{
+			ActionDefineID: actionDefine.ID,
+			ProcessTaskID:  processTaskID,
+			Input:          actionParams,
+			Output:         resultMap,
+		}
+		if _, err := NewActionRecord(record); err != nil {
+			log.Println("create action record failed: ", err)
+		}
+	}()
+	if actionDefine == nil {
+		return fmt.Errorf("action define is nil")
+	}
+	// 根据action定义的inputStruct从params中获取参数
+	for _, inputStruct := range actionDefine.InputStructs {
+		if value, exists := params[inputStruct.Key]; exists {
+			actionParams[inputStruct.Key] = value
+		}
+	}
+	// 执行action
+	switch actionDefine.Protocol {
+	case constants.ActionProtocolHttp:
+		httpAction := actionDefine.Content.HttpAction
+		if result, err = utils.HttpDo(httpAction.Url, string(httpAction.Method), actionParams,
+			utils.WithHeaders(httpAction.Headers),
+			utils.WithTimeout(time.Duration(httpAction.Timeout)*time.Millisecond)); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported action protocol %s", actionDefine.Protocol)
+	}
+	if err := json.Unmarshal(result, &resultMap); err != nil {
+		return err
+	}
+	// 对执行结果进行检查
+	if err = checkOutput(actionDefine.OutputChecks, resultMap); err != nil {
+		return err
 	}
 	return nil
 }
