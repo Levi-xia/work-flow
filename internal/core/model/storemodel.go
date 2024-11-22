@@ -77,6 +77,7 @@ func (this *ProcessInstanceModel) ToBo() (*bo.ProcessInstanceBo, error) {
 type ProcessTaskModel struct {
 	ID                int    `json:"id"`
 	ProcessInstanceID int    `json:"process_instance_id" db:"process_instance_id"`
+	FormInstanceID    int    `json:"form_instance_id" db:"form_instance_id"`
 	Name              string `json:"name" db:"name"`
 	Code              string `json:"code" db:"code"`
 	Status            string `json:"status" db:"status"`
@@ -103,6 +104,7 @@ func (this *ProcessTaskModel) ToBo() (*bo.ProcessTaskBo, error) {
 	return &bo.ProcessTaskBo{
 		ID:                this.ID,
 		ProcessInstanceID: this.ProcessInstanceID,
+		FormInstanceID:    this.FormInstanceID,
 		Name:              this.Name,
 		Code:              this.Code,
 		Status:            constants.ProcessTaskStatus(this.Status),

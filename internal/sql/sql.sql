@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `process_instance` (
 CREATE TABLE IF NOT EXISTS `process_task` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `process_instance_id` INT NOT NULL DEFAULT 0,
+    `form_instance_id` INT NOT NULL DEFAULT 0 AFTER `process_instance_id`
     `name` VARCHAR(255) NOT NULL DEFAULT '',
     `code` VARCHAR(255) NOT NULL DEFAULT '',
     `status` VARCHAR(32) NOT NULL DEFAULT '',
@@ -57,4 +58,27 @@ CREATE TABLE IF NOT EXISTS `action_define` (
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY `uk_code_version` (`code`, `version`)
+) AUTO_INCREMENT = 100000;
+
+
+CREATE TABLE IF NOT EXISTS `form_define` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL DEFAULT '',
+    `code` VARCHAR(255) NOT NULL DEFAULT '',
+    `version` INT NOT NULL DEFAULT 0,
+    `form_structure` TEXT NOT NULL,
+    `component_structure` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY `uk_code_version` (`code`, `version`)
+) AUTO_INCREMENT = 100000;
+
+CREATE TABLE IF NOT EXISTS `form_instance` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `form_define_id` INT NOT NULL DEFAULT 0,
+    `form_data` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
 ) AUTO_INCREMENT = 100000;

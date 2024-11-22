@@ -27,6 +27,7 @@ type ProcessInstanceBo struct {
 type ProcessTaskBo struct {
 	ID                int                             `json:"id"`
 	ProcessInstanceID int                             `json:"process_instance_id"`
+	FormInstanceID    int                             `json:"form_instance_id"`
 	Name              string                          `json:"name"`
 	Code              string                          `json:"code"`
 	Status            constants.ProcessTaskStatus      `json:"status"`

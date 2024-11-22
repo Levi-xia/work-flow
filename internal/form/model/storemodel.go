@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 	"workflow/internal/form/bo"
 	"workflow/internal/utils"
@@ -19,9 +20,10 @@ type FormDefineModel struct {
 
 func (this *FormDefineModel) ToBo() *bo.FormDefineBo {
 	var (
-		createdAt time.Time
-		updatedAt time.Time
-		err       error
+		formStructure []bo.FormStructure
+		createdAt     time.Time
+		updatedAt     time.Time
+		err           error
 	)
 	if createdAt, err = utils.ParseTime(this.CreatedAt); err != nil {
 		return nil
@@ -29,11 +31,14 @@ func (this *FormDefineModel) ToBo() *bo.FormDefineBo {
 	if updatedAt, err = utils.ParseTime(this.UpdatedAt); err != nil {
 		return nil
 	}
+	if err = json.Unmarshal([]byte(this.FormStructure), &formStructure); err != nil {
+		return nil
+	}
 	return &bo.FormDefineBo{
 		ID:                 this.ID,
 		Name:               this.Name,
 		Code:               this.Code,
-		FormStructure:      this.FormStructure,
+		FormStructure:      formStructure,
 		ComponentStructure: this.ComponentStructure,
 		Version:            this.Version,
 		CreatedAt:          createdAt,
@@ -51,6 +56,7 @@ type FormInstanceModel struct {
 
 func (this *FormInstanceModel) ToBo() *bo.FormInstanceBo {
 	var (
+		formData  []bo.FormData
 		createdAt time.Time
 		updatedAt time.Time
 		err       error
@@ -61,10 +67,13 @@ func (this *FormInstanceModel) ToBo() *bo.FormInstanceBo {
 	if updatedAt, err = utils.ParseTime(this.UpdatedAt); err != nil {
 		return nil
 	}
+	if err = json.Unmarshal([]byte(this.FormData), &formData); err != nil {
+		return nil
+	}
 	return &bo.FormInstanceBo{
 		ID:           this.ID,
 		FormDefineID: this.FormDefineID,
-		FormData:     this.FormData,
+		FormData:     formData,
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
 	}

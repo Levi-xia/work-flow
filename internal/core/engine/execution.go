@@ -11,6 +11,8 @@ import (
 	"workflow/internal/core/constants"
 	"workflow/internal/core/process"
 	"workflow/internal/core/service"
+	formBo "workflow/internal/form/bo"
+	formService "workflow/internal/form/service"
 )
 
 type Execution struct {
@@ -123,7 +125,14 @@ func (e *Execution) createTask(node *base.Node) error {
 		processTask *service.ProcessTask
 		err         error
 	)
-	if processTask, err = service.NewProcessTask(e.Instance, node.Code, node.Name, e.Variables); err != nil {
+	// 创建表单
+	var formInstance *formService.FormInstance
+	if node.FormID > 0 {
+		if formInstance, err = formService.NewFormInstance(node.FormID, []*formBo.FormData{}); err != nil {
+			return err
+		}
+	}
+	if processTask, err = service.NewProcessTask(e.Instance, node.Code, node.Name, formInstance.Meta.ID, e.Variables); err != nil {
 		return err
 	}
 	// 执行前置拦截器

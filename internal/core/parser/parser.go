@@ -29,18 +29,12 @@ type EdgeParser struct {
 	Text         Text
 }
 
-type HttpActionParser struct {
-	Url     string
-	Method  string
-	Timeout int
-	Headers map[string]string
-}
-
 type Properties struct {
-	Expr             string
-	PreHooks         []int
-	PreInterceptors  []int
-	PostInterceptors []int
+	Expr             string `json:"expr"`
+	FormID           int    `json:"form_id"`
+	PreHooks         []int  `json:"pre_hooks"`
+	PreInterceptors  []int  `json:"pre_interceptors"`
+	PostInterceptors []int  `json:"post_interceptors"`
 }
 
 type Text struct {
@@ -70,6 +64,7 @@ func Parser2Process(content string) (*process.Process, error) {
 				Code: nodeParser.ID,
 				Name: nodeParser.Text.Value,
 			},
+			FormID:  nodeParser.Properties.FormID,
 			Type:    nodeParser.Type,
 			Inputs:  make([]*base.Edge, 0),
 			Outputs: make([]*base.Edge, 0),

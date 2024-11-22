@@ -15,4 +15,6 @@ type Node struct {
 	PreInterceptors []int
 	// 后置拦截器（实际执行节点后执行）
 	PostInterceptors []int
+	// 表单ID
+	FormID int
 }

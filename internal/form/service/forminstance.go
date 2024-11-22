@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"workflow/internal/form/bo"
 	"workflow/internal/form/model"
 	"workflow/internal/form/store"
 )
@@ -12,7 +13,7 @@ type FormInstance struct {
 }
 
 // 创建表单实例
-func NewFormInstance(formDefineID int, formData map[string]interface{}) (*FormInstance, error) {
+func NewFormInstance(formDefineID int, formData []*bo.FormData) (*FormInstance, error) {
 	formDataBytes, err := json.Marshal(formData)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func NewFormInstance(formDefineID int, formData map[string]interface{}) (*FormIn
 }
 
 // 写入表单数据
-func UpdateFormInstanceFormData(formInstanceID int, formData map[string]interface{}) error {
+func UpdateFormInstanceFormData(formInstanceID int, formData []*bo.FormData) error {
 	formDataBytes, err := json.Marshal(formData)
 	if err != nil {
 		return err

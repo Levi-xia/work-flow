@@ -15,7 +15,7 @@ type ProcessTask struct {
 }
 
 // 创建任务
-func NewProcessTask(instance *ProcessInstance, code, name string, variables map[string]interface{}) (*ProcessTask, error) {
+func NewProcessTask(instance *ProcessInstance, code, name string, formInstanceId int, variables map[string]interface{}) (*ProcessTask, error) {
 	var (
 		err            error
 		variablesBytes []byte
@@ -29,6 +29,7 @@ func NewProcessTask(instance *ProcessInstance, code, name string, variables map[
 		Code:              code,
 		Name:              name,
 		ProcessInstanceID: instance.Meta.ID,
+		FormInstanceID:    formInstanceId,
 		Status:            string(constants.PROCESSTASKSTATUSDOING),
 		Variables:         string(variablesBytes),
 	}

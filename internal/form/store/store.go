@@ -1,6 +1,8 @@
 package store
 
 import (
+	_ "github.com/go-sql-driver/mysql"
+	"log"
 	"workflow/internal/form/model"
 	"workflow/internal/serctx"
 )
@@ -11,10 +13,11 @@ type store struct {
 }
 
 // 全局store实例
-var GlobalStore *store
+var globalStore *store
 
 func init() {
-	GlobalStore = &store{
+	log.Println("init form store")
+	globalStore = &store{
 		formDefineStore:   &MySQLFormDefineStore{},
 		formInstanceStore: &MySQLFormInstanceStore{},
 	}
@@ -22,12 +25,12 @@ func init() {
 
 // 获取定义存储
 func GetFormDefineStore() FormDefineStore {
-	return GlobalStore.formDefineStore
+	return globalStore.formDefineStore
 }
 
 // 获取实例存储
 func GetFormInstanceStore() FormInstanceStore {
-	return GlobalStore.formInstanceStore
+	return globalStore.formInstanceStore
 }
 
 type MySQLFormDefineStore struct{}
