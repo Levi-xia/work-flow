@@ -30,3 +30,31 @@ CREATE TABLE IF NOT EXISTS `process_task` (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) AUTO_INCREMENT = 100000;
+
+CREATE TABLE IF NOT EXISTS `action_record` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `action_define_id` INT NOT NULL DEFAULT 0,
+    `process_task_id` INT NOT NULL DEFAULT 0,
+    `input` TEXT NOT NULL,
+    `output` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY `idx_action_define_id` (`action_define_id`),
+    KEY `idx_process_task_id` (`process_task_id`)
+) AUTO_INCREMENT = 100000;
+
+CREATE TABLE IF NOT EXISTS `action_define` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL DEFAULT '',
+    `code` VARCHAR(255) NOT NULL DEFAULT '',
+    `version` INT NOT NULL DEFAULT 0,
+    `protocol` VARCHAR(32) NOT NULL DEFAULT '',
+    `content` TEXT NOT NULL,
+    `input_structs` TEXT NOT NULL,
+    `output_checks` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY `uk_code_version` (`code`, `version`)
+) AUTO_INCREMENT = 100000;

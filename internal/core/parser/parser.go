@@ -2,14 +2,13 @@ package parser
 
 import (
 	"encoding/json"
-	"time"
 	"workflow/internal/core/base"
 	"workflow/internal/core/constants"
 	"workflow/internal/core/process"
 )
 
 type ProcessDefineParser struct {
-	Code   string
+	Code  string
 	Name  string
 	Nodes []NodeParser
 	Edges []EdgeParser
@@ -37,17 +36,11 @@ type HttpActionParser struct {
 	Headers map[string]string
 }
 
-type ActionParser struct {
-	ActionType constants.ActionType
-	HttpAction HttpActionParser
-	Params     map[string]interface{}
-}
-
 type Properties struct {
 	Expr             string
-	PreHook          *ActionParser
-	PreInterceptors  []*ActionParser
-	PostInterceptors []*ActionParser
+	PreHooks         []int
+	PreInterceptors  []int
+	PostInterceptors []int
 }
 
 type Text struct {
@@ -63,7 +56,7 @@ func Parser2Process(content string) (*process.Process, error) {
 	// 循环所有的点和线，找到对应的source和target关系，构建process
 	process := &process.Process{
 		Base: base.Base{
-			Code:  parser.Code,
+			Code: parser.Code,
 			Name: parser.Name,
 		},
 		Nodes: make([]*base.Node, 0),
@@ -74,45 +67,21 @@ func Parser2Process(content string) (*process.Process, error) {
 	for _, nodeParser := range parser.Nodes {
 		node := &base.Node{
 			Base: base.Base{
-				Code:  nodeParser.ID,
+				Code: nodeParser.ID,
 				Name: nodeParser.Text.Value,
 			},
 			Type:    nodeParser.Type,
 			Inputs:  make([]*base.Edge, 0),
 			Outputs: make([]*base.Edge, 0),
 		}
-		if nodeParser.Properties.PreHook != nil {
-			node.PreHook = &base.Action{
-				ActionType: nodeParser.Properties.PreHook.ActionType,
-				HttpAction: base.HttpAction{
-					Url:     nodeParser.Properties.PreHook.HttpAction.Url,
-					Method:  nodeParser.Properties.PreHook.HttpAction.Method,
-					Timeout: time.Duration(nodeParser.Properties.PreHook.HttpAction.Timeout) * time.Millisecond,
-					Headers: nodeParser.Properties.PreHook.HttpAction.Headers,
-				},
-			}
+		if len(nodeParser.Properties.PreHooks) > 0 {
+			node.PreHooks = nodeParser.Properties.PreHooks
 		}
-		for _, interceptor := range nodeParser.Properties.PreInterceptors {
-			node.PreInterceptors = append(node.PreInterceptors, &base.Action{
-				ActionType: interceptor.ActionType,
-				HttpAction: base.HttpAction{
-					Url:     interceptor.HttpAction.Url,
-					Method:  interceptor.HttpAction.Method,
-					Timeout: time.Duration(interceptor.HttpAction.Timeout) * time.Millisecond,
-					Headers: interceptor.HttpAction.Headers,
-				},
-			})
+		if len(nodeParser.Properties.PreInterceptors) > 0 {
+			node.PreInterceptors = nodeParser.Properties.PreInterceptors
 		}
-		for _, interceptor := range nodeParser.Properties.PostInterceptors {
-			node.PostInterceptors = append(node.PostInterceptors, &base.Action{
-				ActionType: interceptor.ActionType,
-				HttpAction: base.HttpAction{
-					Url:     interceptor.HttpAction.Url,
-					Method:  interceptor.HttpAction.Method,
-					Timeout: time.Duration(interceptor.HttpAction.Timeout) * time.Millisecond,
-					Headers: interceptor.HttpAction.Headers,
-				},
-			})
+		if len(nodeParser.Properties.PostInterceptors) > 0 {
+			node.PostInterceptors = nodeParser.Properties.PostInterceptors
 		}
 		nodeMap[nodeParser.ID] = node
 		process.Nodes = append(process.Nodes, node)
@@ -122,7 +91,7 @@ func Parser2Process(content string) (*process.Process, error) {
 	for _, edgeParser := range parser.Edges {
 		edge := &base.Edge{
 			Base: base.Base{
-				Code:  edgeParser.ID,
+				Code: edgeParser.ID,
 				Name: edgeParser.Text.Value,
 			},
 			Expr: edgeParser.Properties.Expr,

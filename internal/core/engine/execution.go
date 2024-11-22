@@ -3,15 +3,14 @@ package engine
 import (
 	"errors"
 	"fmt"
+	"github.com/caibirdme/yql"
 	"log"
 	"sync"
+	actionService "workflow/internal/action/service"
 	"workflow/internal/core/base"
 	"workflow/internal/core/constants"
 	"workflow/internal/core/process"
 	"workflow/internal/core/service"
-	"workflow/internal/utils"
-
-	"github.com/caibirdme/yql"
 )
 
 type Execution struct {
@@ -76,10 +75,8 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 		}
 	}
 	// 前置拦截器
-	if node.PreInterceptors != nil {
-		if err := e.executeActions(node.PreInterceptors); err != nil {
-			return err
-		}
+	if err := actionService.ExecuteActions(node.PreHooks, task.Meta.ID, e.Variables); err != nil {
+		return err
 	}
 	// 结束任务写库
 	if err := service.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
@@ -97,10 +94,8 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 		return err
 	}
 	// 后置拦截器
-	if node.PostInterceptors != nil {
-		if err := e.executeActions(node.PostInterceptors); err != nil {
-			return err
-		}
+	if err := actionService.ExecuteActions(node.PostInterceptors, task.Meta.ID, e.Variables); err != nil {
+		return err
 	}
 	return nil
 }
@@ -124,14 +119,16 @@ func (e *Execution) createTask(node *base.Node) error {
 			e.Variables[k] = v
 		}
 	}
-	if _, err := service.NewProcessTask(e.Instance, node.Code, node.Name, e.Variables); err != nil {
+	var (
+		processTask *service.ProcessTask
+		err         error
+	)
+	if processTask, err = service.NewProcessTask(e.Instance, node.Code, node.Name, e.Variables); err != nil {
 		return err
 	}
 	// 执行前置拦截器
-	if node.PreHook != nil {
-		if err := e.executeAction(node.PreHook); err != nil {
-			return err
-		}
+	if err := actionService.ExecuteActions(node.PreHooks, processTask.Meta.ID, e.Variables); err != nil {
+		return err
 	}
 	return nil
 }
@@ -202,58 +199,4 @@ func (e *Execution) finishInstance() error {
 		return errors.New("instance is nil")
 	}
 	return service.FinishProcessInstance(e.Instance.Meta.ID)
-}
-
-// 执行节点动作
-func (e *Execution) executeAction(action *base.Action) error {
-	if action.Params == nil {
-		action.Params = make(map[string]interface{})
-	}
-	// 将Variables中的变量复制到Params,但不覆盖已有值
-	for k, v := range e.Variables {
-		if _, exists := action.Params[k]; !exists {
-			action.Params[k] = v
-		}
-	}
-	switch action.ActionType {
-	case constants.HTTPCALLED:
-		/*这里暂时不处理返回内容，如果要处理，对e进行修改，需要加锁
-		同时e的变量被修改，可能会导致多个action执行时，变量内容不同，
-		使用action能力需注意*/
-		_, err := utils.HttpDo(action.HttpAction.Url, action.HttpAction.Method, action.Params,
-			utils.WithHeaders(action.HttpAction.Headers),
-			utils.WithTimeout(action.HttpAction.Timeout))
-		return err
-	}
-	return nil
-}
-
-// 批量执行action
-func (e *Execution) executeActions(actions []*base.Action) error {
-	errCh := make(chan error)
-	go func() {
-		var wg sync.WaitGroup
-		for _, action := range actions {
-			wg.Add(1)
-			go func(action *base.Action) {
-				defer wg.Done()
-				defer func() {
-					if r := recover(); r != nil {
-						errCh <- fmt.Errorf("panic in action execution: %v", r)
-					}
-				}()
-				if err := e.executeAction(action); err != nil {
-					errCh <- err
-				}
-			}(action)
-		}
-		wg.Wait()
-		close(errCh)
-	}()
-	for err := range errCh {
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

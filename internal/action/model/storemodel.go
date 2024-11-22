@@ -9,16 +9,16 @@ import (
 )
 
 type ActionDefineModel struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Code         string `json:"code"`
-	Version      int    `json:"version"`
-	Protocol     string `json:"protocol"`
-	Content      string `json:"content"`
-	InputStructs string `json:"input_structs"`
-	OutputChecks string `json:"output_checks"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
+	ID           int    `json:"id" db:"id"`
+	Name         string `json:"name" db:"name"`
+	Code         string `json:"code" db:"code"`
+	Version      int    `json:"version" db:"version"`
+	Protocol     string `json:"protocol" db:"protocol"`
+	Content      string `json:"content" db:"content"`
+	InputStructs string `json:"input_structs" db:"input_structs"`
+	OutputChecks string `json:"output_checks" db:"output_checks"`
+	CreatedAt    string `json:"created_at" db:"created_at"`
+	UpdatedAt    string `json:"updated_at" db:"updated_at"`
 }
 
 func (this *ActionDefineModel) ToBo() (*bo.ActionDefineBo, error) {
@@ -60,21 +60,22 @@ func (this *ActionDefineModel) ToBo() (*bo.ActionDefineBo, error) {
 }
 
 type ActionRecordModel struct {
-	ID                int    `json:"id"`
-	ActionDefineID    int    `json:"action_define_id"`
-	ProcessTaskID     int    `json:"process_task_id"`
-	Input             string `json:"input"`
-	Output            string `json:"output"`
-	CreatedAt         string `json:"created_at"`
-	UpdatedAt         string `json:"updated_at"`
+	ID             int    `json:"id" db:"id"`
+	ActionDefineID int    `json:"action_define_id" db:"action_define_id"`
+	ProcessTaskID  int    `json:"process_task_id" db:"process_task_id"`
+	Input          string `json:"input" db:"input"`
+	Output         string `json:"output" db:"output"`
+	CreatedAt      string `json:"created_at" db:"created_at"`
+	UpdatedAt      string `json:"updated_at" db:"updated_at"`
 }
+
 func (this *ActionRecordModel) ToBo() (*bo.ActionRecordBo, error) {
 	var (
-		input map[string]interface{}
-		output map[string]interface{}
+		input     map[string]interface{}
+		output    map[string]interface{}
 		createdAt time.Time
 		updatedAt time.Time
-		err error
+		err       error
 	)
 	if createdAt, err = utils.ParseTime(this.CreatedAt); err != nil {
 		return nil, err
@@ -86,12 +87,12 @@ func (this *ActionRecordModel) ToBo() (*bo.ActionRecordBo, error) {
 		return nil, err
 	}
 	return &bo.ActionRecordBo{
-		ID:                this.ID,
-		ActionDefineID:    this.ActionDefineID,
-		ProcessTaskID:     this.ProcessTaskID,
-		Input:             input,
-		Output:            output,
-		CreatedAt:         createdAt,
-		UpdatedAt:         updatedAt,
+		ID:             this.ID,
+		ActionDefineID: this.ActionDefineID,
+		ProcessTaskID:  this.ProcessTaskID,
+		Input:          input,
+		Output:         output,
+		CreatedAt:      createdAt,
+		UpdatedAt:      updatedAt,
 	}, nil
 }

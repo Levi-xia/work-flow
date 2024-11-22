@@ -36,27 +36,28 @@ func ExecuteActions(actionDefineIds []int, processTaskID int, params map[string]
 
 // 检查入参
 func checkParams(actionDefines []*bo.ActionDefineBo, params map[string]interface{}) error {
-	wg := sync.WaitGroup{}
 	errChan := make(chan error)
-
-	for _, actionDefine := range actionDefines {
-		wg.Add(1)
-		go func(actionDefine *bo.ActionDefineBo) {
-			defer wg.Done()
-			defer func() {
-				if r := recover(); r != nil {
-					errChan <- fmt.Errorf("panic in action check params: %v", r)
+	go func() {
+		var wg sync.WaitGroup
+		for _, actionDefine := range actionDefines {
+			wg.Add(1)
+			go func(actionDefine *bo.ActionDefineBo) {
+				defer wg.Done()
+				defer func() {
+					if r := recover(); r != nil {
+						errChan <- fmt.Errorf("panic in action check params: %v", r)
+					}
+				}()
+				for _, inputStruct := range actionDefine.InputStructs {
+					if err := checkParam(&inputStruct, params); err != nil {
+						errChan <- err
+					}
 				}
-			}()
-			for _, inputStruct := range actionDefine.InputStructs {
-				if err := checkParam(&inputStruct, params); err != nil {
-					errChan <- err
-				}
-			}
-		}(actionDefine)
-	}
-	wg.Wait()
-	close(errChan)
+			}(actionDefine)
+		}
+		wg.Wait()
+		close(errChan)
+	}()
 
 	for err := range errChan {
 		return err
@@ -67,24 +68,26 @@ func checkParams(actionDefines []*bo.ActionDefineBo, params map[string]interface
 // 执行action
 func execActions(actionDefines []*bo.ActionDefineBo, processTaskID int, params map[string]interface{}) error {
 	// 并发执行action
-	wg := sync.WaitGroup{}
 	errChan := make(chan error)
-	for _, actionDefine := range actionDefines {
-		wg.Add(1)
-		go func(actionDefine *bo.ActionDefineBo) {
-			defer wg.Done()
-			defer func() {
-				if r := recover(); r != nil {
-					errChan <- fmt.Errorf("panic in action exec: %v", r)
+	go func() {
+		wg := sync.WaitGroup{}
+		for _, actionDefine := range actionDefines {
+			wg.Add(1)
+			go func(actionDefine *bo.ActionDefineBo) {
+				defer wg.Done()
+				defer func() {
+					if r := recover(); r != nil {
+						errChan <- fmt.Errorf("panic in action exec: %v", r)
+					}
+				}()
+				if err := execAction(actionDefine, processTaskID, params); err != nil {
+					errChan <- err
 				}
-			}()
-			if err := execAction(actionDefine, processTaskID, params); err != nil {
-				errChan <- err
-			}
-		}(actionDefine)
-	}
-	wg.Wait()
-	close(errChan)
+			}(actionDefine)
+		}
+		wg.Wait()
+		close(errChan)
+	}()
 	for err := range errChan {
 		return err
 	}

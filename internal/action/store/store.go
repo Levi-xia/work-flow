@@ -1,10 +1,12 @@
 package store
 
 import (
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"workflow/internal/action/model"
 	"workflow/internal/serctx"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
 // 包含初始化、取用逻辑
@@ -55,7 +57,11 @@ func (s *MySQLActionDefineStore) GetActionDefine(id int) (*model.ActionDefineMod
 
 func (s *MySQLActionDefineStore) GetActionDefines(ids []int) ([]*model.ActionDefineModel, error) {
 	var defineModels []*model.ActionDefineModel
-	err := serctx.SerCtx.Db.Select(&defineModels, "SELECT * FROM action_define WHERE id IN (:ids)", map[string]interface{}{"ids": ids})
+	query, args, err := sqlx.In("SELECT * FROM action_define WHERE id in (?)", ids)
+	if err != nil {
+		return nil, err
+	}
+	err = serctx.SerCtx.Db.Select(&defineModels, query, args...)
 	return defineModels, err
 }
 
@@ -93,8 +99,8 @@ func (s *MySQLActionRecordStore) GetActionRecordsByProcessTaskID(processTaskID i
 func (s *MySQLActionRecordStore) UpdateActionRecordResult(id int, input map[string]interface{}, output map[string]interface{}) error {
 	_, err := serctx.SerCtx.Db.NamedExec(`
 		UPDATE action_record SET input = :input, output = :output WHERE id = :id`, map[string]interface{}{
-		"id": id,
-		"input": input,
+		"id":     id,
+		"input":  input,
 		"output": output,
 	})
 	return err
