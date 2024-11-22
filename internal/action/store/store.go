@@ -53,6 +53,12 @@ func (s *MySQLActionDefineStore) GetActionDefine(id int) (*model.ActionDefineMod
 	return &defineModel, err
 }
 
+func (s *MySQLActionDefineStore) GetActionDefines(ids []int) ([]*model.ActionDefineModel, error) {
+	var defineModels []*model.ActionDefineModel
+	err := serctx.SerCtx.Db.Select(&defineModels, "SELECT * FROM action_define WHERE id IN (:ids)", map[string]interface{}{"ids": ids})
+	return defineModels, err
+}
+
 func (s *MySQLActionDefineStore) GetActionDefinesByCode(code string) ([]*model.ActionDefineModel, error) {
 	var defineModels []*model.ActionDefineModel
 	err := serctx.SerCtx.Db.Select(&defineModels, "SELECT * FROM action_define WHERE code = ?", code)
@@ -61,11 +67,15 @@ func (s *MySQLActionDefineStore) GetActionDefinesByCode(code string) ([]*model.A
 
 type MySQLActionRecordStore struct{}
 
-func (s *MySQLActionRecordStore) CreateActionRecord(record *model.ActionRecordModel) error {
-	_, err := serctx.SerCtx.Db.NamedExec(`
+func (s *MySQLActionRecordStore) CreateActionRecord(record *model.ActionRecordModel) (int, error) {
+	result, err := serctx.SerCtx.Db.NamedExec(`
 		INSERT INTO action_record (action_define_id, process_task_id, input, output)
 		VALUES (:action_define_id, :process_task_id, :input, :output)`, record)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	id, err := result.LastInsertId()
+	return int(id), err
 }
 
 func (s *MySQLActionRecordStore) GetActionRecord(id int) (*model.ActionRecordModel, error) {

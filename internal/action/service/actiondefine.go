@@ -72,6 +72,22 @@ func GetActionDefine(id int) (*bo.ActionDefineBo, error) {
 	return defineModel.ToBo()
 }
 
+func GetActionDefines(ids []int) ([]*bo.ActionDefineBo, error) {
+	defineModels, err := store.GetActionDefineStore().GetActionDefines(ids)
+	if err != nil {
+		return nil, err
+	}
+	defineBos := make([]*bo.ActionDefineBo, 0, len(defineModels))
+	for _, defineModel := range defineModels {
+		defineBo, err := defineModel.ToBo()
+		if err != nil {
+			return nil, err
+		}
+		defineBos = append(defineBos, defineBo)
+	}
+	return defineBos, nil
+}
+
 // 获取最新版本
 func getLatestVersion(code string) (*model.ActionDefineModel, error) {
 	defineModels, err := store.GetActionDefineStore().GetActionDefinesByCode(code)
