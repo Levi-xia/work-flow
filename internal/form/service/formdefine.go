@@ -2,6 +2,7 @@ package service
 
 import (
 	"sort"
+	"workflow/internal/form/bo"
 	"workflow/internal/form/model"
 	"workflow/internal/form/store"
 	"workflow/internal/utils"
@@ -42,6 +43,14 @@ func NewFormDefine(name, code, formStructure, componentStructure string) (*FormD
 		return nil, err
 	}
 	return define, nil
+}
+
+func GetFormDefine(id int) (*bo.FormDefineBo, error) {
+	formDefineModel, err := store.GetFormDefineStore().GetFormDefine(id)
+	if err != nil {
+		return nil, err
+	}
+	return formDefineModel.ToBo()
 }
 
 func getLatestVersion(code string) (*model.FormDefineModel, error) {

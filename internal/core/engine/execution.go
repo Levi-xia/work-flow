@@ -3,7 +3,6 @@ package engine
 import (
 	"errors"
 	"fmt"
-	"github.com/caibirdme/yql"
 	"log"
 	"sync"
 	actionService "workflow/internal/action/service"
@@ -13,6 +12,7 @@ import (
 	"workflow/internal/core/service"
 	formBo "workflow/internal/form/bo"
 	formService "workflow/internal/form/service"
+	"github.com/caibirdme/yql"
 )
 
 type Execution struct {
@@ -84,10 +84,6 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 	if err := service.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
 		return err
 	}
-	// 执行边的execute逻辑
-	if err := e.executeEdges(node.Outputs); err != nil {
-		return err
-	}
 	// 更新instance的变量
 	for k, v := range e.Variables {
 		e.Instance.Meta.Variables[k] = v
@@ -95,8 +91,18 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 	if err := service.UpdateProcessInstanceVariables(e.Instance.Meta.ID, e.Instance.Meta.Variables); err != nil {
 		return err
 	}
+	// 更新表单状态
+	if task.Meta != nil && task.Meta.FormInstanceID > 0 {
+		if err := formService.UpdateFormInstanceFormData(task.Meta.FormInstanceID, e.Variables); err != nil {
+			return err
+		}
+	}
 	// 后置拦截器
 	if err := actionService.ExecuteActions(node.PostInterceptors, task.Meta.ID, e.Variables); err != nil {
+		return err
+	}
+	// 执行边的execute逻辑
+	if err := e.executeEdges(node.Outputs); err != nil {
 		return err
 	}
 	return nil

@@ -18,32 +18,32 @@ type FormDefineModel struct {
 	UpdatedAt          string `json:"updated_at" db:"updated_at"`
 }
 
-func (this *FormDefineModel) ToBo() *bo.FormDefineBo {
+func (this *FormDefineModel) ToBo() (*bo.FormDefineBo, error) {
 	var (
-		formStructure []bo.FormStructure
-		createdAt     time.Time
-		updatedAt     time.Time
-		err           error
+		componentStructure []bo.Component
+		createdAt          time.Time
+		updatedAt          time.Time
+		err                error
 	)
 	if createdAt, err = utils.ParseTime(this.CreatedAt); err != nil {
-		return nil
+		return nil, err
 	}
 	if updatedAt, err = utils.ParseTime(this.UpdatedAt); err != nil {
-		return nil
+		return nil, err
 	}
-	if err = json.Unmarshal([]byte(this.FormStructure), &formStructure); err != nil {
-		return nil
+	if err = json.Unmarshal([]byte(this.ComponentStructure), &componentStructure); err != nil {
+		return nil, err
 	}
 	return &bo.FormDefineBo{
 		ID:                 this.ID,
 		Name:               this.Name,
 		Code:               this.Code,
-		FormStructure:      formStructure,
-		ComponentStructure: this.ComponentStructure,
+		FormStructure:      this.FormStructure,
+		ComponentStructure: componentStructure,
 		Version:            this.Version,
 		CreatedAt:          createdAt,
 		UpdatedAt:          updatedAt,
-	}
+	}, nil
 }
 
 type FormInstanceModel struct {
@@ -54,7 +54,7 @@ type FormInstanceModel struct {
 	UpdatedAt    string `json:"updated_at" db:"updated_at"`
 }
 
-func (this *FormInstanceModel) ToBo() *bo.FormInstanceBo {
+func (this *FormInstanceModel) ToBo() (*bo.FormInstanceBo, error) {
 	var (
 		formData  []bo.FormData
 		createdAt time.Time
@@ -62,13 +62,13 @@ func (this *FormInstanceModel) ToBo() *bo.FormInstanceBo {
 		err       error
 	)
 	if createdAt, err = utils.ParseTime(this.CreatedAt); err != nil {
-		return nil
+		return nil, err
 	}
 	if updatedAt, err = utils.ParseTime(this.UpdatedAt); err != nil {
-		return nil
+		return nil, err
 	}
 	if err = json.Unmarshal([]byte(this.FormData), &formData); err != nil {
-		return nil
+		return nil, err
 	}
 	return &bo.FormInstanceBo{
 		ID:           this.ID,
@@ -76,5 +76,5 @@ func (this *FormInstanceModel) ToBo() *bo.FormInstanceBo {
 		FormData:     formData,
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
-	}
+	}, nil
 }
