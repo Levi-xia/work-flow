@@ -23,7 +23,7 @@ func TestExecuteActions(t *testing.T) {
 
 func TestCreateActionDefine(t *testing.T) {
 	serctx.InitServerContext()
-	define, err := NewActionDefine("测试", "test", "http", &bo.ActionContent{
+	define, err := NewActionDefine("通用请假action", "leave", "http", &bo.ActionContent{
 		HttpAction: bo.HttpAction{
 			Url:     "http://127.0.0.1:8080/workflow/action/v1/sendSms",
 			Method:  constants.HttpMethodGet,
@@ -31,19 +31,14 @@ func TestCreateActionDefine(t *testing.T) {
 		},
 	}, []*bo.ParamsStruct{
 		{
-			Type:     constants.ParamsStructTypeString,
-			Key:      "key1",
-			Required: true,
-		},
-		{
 			Type:     constants.ParamsStructTypeInt,
-			Key:      "key2",
+			Key:      "days",
 			Required: true,
 		},
 		{
 			Type:     constants.ParamsStructTypeString,
-			Key:      "key3",
-			Required: false,
+			Key:      "reason",
+			Required: true,
 		},
 	}, []*bo.OutputCheck{
 		{

@@ -108,8 +108,8 @@ type MySQLProcessTaskStore struct{}
 
 func (s *MySQLProcessTaskStore) CreateProcessTask(meta *model.ProcessTaskModel) (int, error) {
 	result, err := serctx.SerCtx.Db.Exec(`
-		INSERT INTO process_task (process_instance_id, code, name, status, variables)
-		VALUES (?, ?, ?, ?, ?)`, meta.ProcessInstanceID, meta.Code, meta.Name, meta.Status, meta.Variables)
+		INSERT INTO process_task (process_instance_id, form_instance_id, code, name, status, variables)
+		VALUES (?, ?, ?, ?, ?)`, meta.ProcessInstanceID, meta.FormInstanceID, meta.Code, meta.Name, meta.Status, meta.Variables)
 	if err != nil {
 		return 0, err
 	}
