@@ -7,7 +7,7 @@ type CreateProcessDefineRequest struct {
 }
 
 type CreateProcessDefineResponse struct {
-	ProcessDefineId int    `json:"processDefineId"`
+	ProcessDefineId int    `json:"process_define_id"`
 	Code            string `json:"code"`
 	Name            string `json:"name"`
 	Version         int    `json:"version"`
@@ -20,7 +20,7 @@ func (CreateProcessDefineRequest) GetMessages() common.ValidatorMessages {
 }
 
 type StartProcessInstanceRequest struct {
-	ProcessDefineId int `json:"processDefineId" form:"processDefineId" binding:"required"`
+	ProcessDefineId int `json:"process_define_id" form:"process_define_id" binding:"required"`
 	Variables       map[string]interface{} `json:"variables" form:"variables"`
 }
 
@@ -30,21 +30,21 @@ type StartProcessInstanceResponse struct {
 
 func (StartProcessInstanceRequest) GetMessages() common.ValidatorMessages {
 	return common.ValidatorMessages{
-		"processDefineId.required": "流程定义id不能为空",
+		"process_define_id.required": "流程定义id不能为空",
 	}
 }
 
 type ExecuteTaskRequest struct {
-	TaskId int `json:"taskId" form:"taskId" binding:"required"`
+	TaskId int `json:"task_id" form:"task_id" binding:"required"`
 	Variables map[string]interface{} `json:"variables" form:"variables"`
 }
 
 type ExecuteTaskResponse struct {
-	TaskId int `json:"taskId"`
+	TaskId int `json:"task_id"`
 }
 
 func (ExecuteTaskRequest) GetMessages() common.ValidatorMessages {
 	return common.ValidatorMessages{
-		"taskId.required": "任务id不能为空",
+		"task_id.required": "任务id不能为空",
 	}
 }

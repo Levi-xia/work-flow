@@ -8,10 +8,16 @@ import (
 
 func SetRoutes(r *gin.Engine) {
 
+	// 拦截器
+	interceptionRouter := r.Group("workflow/interception/v1")
+	{
+		interceptionRouter.GET("/sendSms", handler.SendSms)
+	}
+
 	// 动作路由
 	actionRouter := r.Group("workflow/action/v1")
 	{
-		actionRouter.GET("/sendSms", handler.SendSms)
+		actionRouter.POST("createActionDefine", handler.CreateActionDefine)
 	}
 
 	// 表单路由

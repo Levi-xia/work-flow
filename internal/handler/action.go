@@ -1,17 +1,28 @@
 package handler
 
 import (
-	"log"
 	"net/http"
+	"workflow/internal/action/service"
+	"workflow/internal/common"
+	"workflow/internal/dto"
 
 	"github.com/gin-gonic/gin"
 )
 
 
-func SendSms(c *gin.Context) {
-	log.Println("sendSms")
-	log.Println(c.Request.Header)
-	log.Println(c.Request.Body)
-	log.Println(c.Request.URL.Query())
-	c.JSON(http.StatusOK, gin.H{"message": "sendSms", "assert": true})
+func CreateActionDefine(c *gin.Context) {
+	form := &dto.CreateActionDefineRequest{}
+	rsp := &common.Result{}
+	if err := c.ShouldBind(form); err != nil {
+		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
+		return
+	}
+	define, err := service.NewActionDefine(form.Name, form.Code, form.Protocol, form.Content, form.InputStructs, form.OutputChecks)
+	if err != nil {
+		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, rsp.Success(&dto.CreateActionDefineResponse{
+		ActionDefineID: define.Meta.ID,
+	}))
 }
