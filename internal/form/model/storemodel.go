@@ -48,7 +48,7 @@ func (this *FormDefineModel) ToBo() (*bo.FormDefineBo, error) {
 
 type FormInstanceModel struct {
 	ID           int
-	FormDefineID int
+	FormDefineID int `json:"form_define_id" db:"form_define_id"`
 	FormData     string `json:"form_data" db:"form_data"`
 	CreatedAt    string `json:"created_at" db:"created_at"`
 	UpdatedAt    string `json:"updated_at" db:"updated_at"`

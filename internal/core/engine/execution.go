@@ -3,6 +3,7 @@ package engine
 import (
 	"errors"
 	"fmt"
+	"github.com/caibirdme/yql"
 	"log"
 	"sync"
 	actionService "workflow/internal/action/service"
@@ -12,7 +13,6 @@ import (
 	"workflow/internal/core/service"
 	formBo "workflow/internal/form/bo"
 	formService "workflow/internal/form/service"
-	"github.com/caibirdme/yql"
 )
 
 type Execution struct {
@@ -70,14 +70,14 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 	if err != nil {
 		return err
 	}
-	// task的变量赋值
-	for k, v := range task.Meta.Variables {
-		if _, ok := e.Variables[k]; !ok {
+	// 把instance的变量赋值到Variables，但是Variables已经存在的变量不覆盖
+	for k, v := range e.Instance.Meta.Variables {
+		if _, exists := e.Variables[k]; !exists {
 			e.Variables[k] = v
 		}
 	}
 	// 前置拦截器
-	if err := actionService.ExecuteActions(node.PreHooks, task.Meta.ID, e.Variables); err != nil {
+	if err := actionService.ExecuteActions(node.PreInterceptors, task.Meta.ID, e.Variables); err != nil {
 		return err
 	}
 	// 结束任务写库
@@ -121,12 +121,6 @@ func (e *Execution) createTask(node *base.Node) error {
 	if e.Variables == nil {
 		e.Variables = make(map[string]interface{})
 	}
-	// 把instance的变量赋值到Variables，但是Variables已经存在的变量不覆盖
-	for k, v := range e.Instance.Meta.Variables {
-		if _, exists := e.Variables[k]; !exists {
-			e.Variables[k] = v
-		}
-	}
 	var (
 		processTask *service.ProcessTask
 		err         error
@@ -138,7 +132,7 @@ func (e *Execution) createTask(node *base.Node) error {
 			return err
 		}
 	}
-	if processTask, err = service.NewProcessTask(e.Instance, node.Code, node.Name, formInstance.Meta.ID, e.Variables); err != nil {
+	if processTask, err = service.NewProcessTask(e.Instance, node.Code, node.Name, formInstance.Meta.ID, map[string]interface{}{}); err != nil {
 		return err
 	}
 	// 执行前置拦截器

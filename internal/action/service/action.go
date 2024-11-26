@@ -108,17 +108,11 @@ func checkParam(inputStruct *bo.ParamsStruct, params map[string]interface{}) err
 			if _, ok := paramValue.(string); !ok {
 				return fmt.Errorf("parameter %s should be string type", inputStruct.Key)
 			}
-		case constants.ParamsStructTypeInt:
+		case constants.ParamsStructTypeNumber:
 			switch paramValue.(type) {
-			case int, int32, int64:
+			case int, int32, int64, float32, float64:
 			default:
-				return fmt.Errorf("parameter %s should be int type", inputStruct.Key)
-			}
-		case constants.ParamsStructTypeFloat:
-			switch paramValue.(type) {
-			case float32, float64:
-			default:
-				return fmt.Errorf("parameter %s should be float type", inputStruct.Key)
+				return fmt.Errorf("parameter %s should be number type", inputStruct.Key)
 			}
 		case constants.ParamsStructTypeBool:
 			if _, ok := paramValue.(bool); !ok {

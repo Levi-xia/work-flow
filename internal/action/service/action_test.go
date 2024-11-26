@@ -31,7 +31,7 @@ func TestCreateActionDefine(t *testing.T) {
 		},
 	}, []*bo.ParamsStruct{
 		{
-			Type:     constants.ParamsStructTypeInt,
+			Type:     constants.ParamsStructTypeNumber,
 			Key:      "days",
 			Required: true,
 		},

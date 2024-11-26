@@ -6,7 +6,7 @@ type ParamsStructType string
 
 const (
 	ParamsStructTypeString ParamsStructType = "string"
-	ParamsStructTypeInt    ParamsStructType = "int"
+	ParamsStructTypeNumber ParamsStructType = "number"
 	ParamsStructTypeBool   ParamsStructType = "bool"
 	ParamsStructTypeFloat  ParamsStructType = "float"
 	ParamsStructTypeArray  ParamsStructType = "array"
