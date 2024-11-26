@@ -25,7 +25,7 @@ type StartProcessInstanceRequest struct {
 }
 
 type StartProcessInstanceResponse struct {
-	ProcessInstanceId int `json:"processInstanceId"`
+	ProcessInstanceId int `json:"process_instance_id"`
 }
 
 func (StartProcessInstanceRequest) GetMessages() common.ValidatorMessages {

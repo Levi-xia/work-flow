@@ -19,5 +19,5 @@ func (CreateFormDefineRequest) GetMessages() common.ValidatorMessages {
 }
 
 type CreateFormDefineResponse struct {
-	FormDefineId int `json:"formDefineId"`
+	FormDefineId int `json:"form_define_id"`
 }
