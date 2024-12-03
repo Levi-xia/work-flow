@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"workflow/config"
 	"workflow/internal/routers"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ func RunServer() {
 	r := setupRouter()
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", 8080),
+		Addr:    fmt.Sprintf(":%d", config.Conf.Server.Port),
 		Handler: r,
 	}
 	go func() {

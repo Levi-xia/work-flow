@@ -156,6 +156,7 @@ func (e *Execution) executeEdges(edges []*base.Edge) error {
 						errCh <- fmt.Errorf("panic in edge execution: %v", r)
 					}
 				}()
+				// 这里应该有问题，e被一个分支更新可能影响其他分支流程，可以考虑复制一份e执行边
 				if err := e.executeEdge(edge); err != nil {
 					errCh <- err
 				}

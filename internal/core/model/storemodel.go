@@ -12,6 +12,7 @@ type ProcessDefineModel struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name" db:"name"`
 	Code      string `json:"code" db:"code"`
+	UserID    int    `json:"user_id" db:"user_id"`
 	Version   int    `json:"version" db:"version"`
 	Content   string `json:"content" db:"content"`
 	CreatedAt string `json:"created_at" db:"created_at"`
@@ -33,6 +34,7 @@ func (this *ProcessDefineModel) ToBo() (*bo.ProcessDefineBo, error) {
 		ID:        this.ID,
 		Name:      this.Name,
 		Code:      this.Code,
+		UserID:    this.UserID,
 		Version:   this.Version,
 		Content:   this.Content,
 		CreatedAt: createdAt,
@@ -43,6 +45,7 @@ func (this *ProcessDefineModel) ToBo() (*bo.ProcessDefineBo, error) {
 type ProcessInstanceModel struct {
 	ID              int    `json:"id"`
 	ProcessDefineID int    `json:"process_define_id" db:"process_define_id"`
+	UserID          int    `json:"user_id" db:"user_id"`
 	Status          string `json:"status" db:"status"`
 	Variables       string `json:"variables" db:"variables"`
 	CreatedAt       string `json:"created_at" db:"created_at"`
@@ -67,6 +70,7 @@ func (this *ProcessInstanceModel) ToBo() (*bo.ProcessInstanceBo, error) {
 	return &bo.ProcessInstanceBo{
 		ID:              this.ID,
 		ProcessDefineID: this.ProcessDefineID,
+		UserID:          this.UserID,
 		Status:          constants.ProcessInstanceStatus(this.Status),
 		Variables:       variables,
 		CreatedAt:       createdAt,
@@ -80,6 +84,7 @@ type ProcessTaskModel struct {
 	FormInstanceID    int    `json:"form_instance_id" db:"form_instance_id"`
 	Name              string `json:"name" db:"name"`
 	Code              string `json:"code" db:"code"`
+	UserID            int    `json:"user_id" db:"user_id"`
 	Status            string `json:"status" db:"status"`
 	Variables         string `json:"variables" db:"variables"`
 	CreatedAt         string `json:"created_at" db:"created_at"`
@@ -107,6 +112,7 @@ func (this *ProcessTaskModel) ToBo() (*bo.ProcessTaskBo, error) {
 		FormInstanceID:    this.FormInstanceID,
 		Name:              this.Name,
 		Code:              this.Code,
+		UserID:            this.UserID,
 		Status:            constants.ProcessTaskStatus(this.Status),
 		Variables:         variables,
 		CreatedAt:         createdAt,
