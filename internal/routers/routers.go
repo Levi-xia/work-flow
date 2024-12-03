@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"workflow/internal/common"
 	"workflow/internal/handler"
 
 	"github.com/gin-gonic/gin"
@@ -35,5 +36,17 @@ func SetRoutes(r *gin.Engine) {
 		processRouter.POST("/startProcessInstance", handler.StartProcessInstance)
 		// 执行任务
 		processRouter.POST("/executeTask", handler.ExecuteTask)
+	}
+
+	// 测试
+	testRouter := r.Group("workflow/test/v1")
+	{
+		testRouter.GET("/token", func(ctx *gin.Context) {
+			token, err := (&common.JwtService{}).CreateToken(common.AdminGuardName, "1000")
+			ctx.JSON(200, gin.H{
+				"token": token,
+				"err":   err,
+			})
+		})
 	}
 }

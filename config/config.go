@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"workflow/internal/common"
+	"workflow/internal/env"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -102,7 +102,7 @@ func InitConfig() *Config {
 		viper: viper.New(),
 	}
 	workDir, _ := os.Getwd()
-	config.viper.SetConfigName(fmt.Sprintf("app-%s", common.ENV))
+	config.viper.SetConfigName(fmt.Sprintf("app-%s", env.ENV))
 	config.viper.AddConfigPath(workDir + "/config")
 	config.viper.SetConfigType("yaml")
 
