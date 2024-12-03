@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 	"workflow/config"
+	"workflow/internal/middler"
 	"workflow/internal/routers"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ import (
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	// 全局中间件
+	middler.InitMiddleware(r)
 	// 前端项目静态资源
 	// 其他静态资源
 	// 注册路由

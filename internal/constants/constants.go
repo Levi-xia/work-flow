@@ -1,6 +1,6 @@
 package constants
 
 const (
-	ACCESSTOKENCOOKIEKEY = "access_token"
+	ACCESSTOKENCOOKIEKEY = "Access_Token"
 	ACCESSTOKENUSERIDKEY = "access_token_user_id"
 )

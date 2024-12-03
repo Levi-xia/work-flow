@@ -54,7 +54,7 @@ func (s *MySQLProcessDefineStore) GetProcessDefine(id int) (*model.ProcessDefine
 func (s *MySQLProcessDefineStore) CreateProcessDefine(meta *model.ProcessDefineModel) (int, error) {
 	result, err := serctx.SerCtx.Db.NamedExec(`
 		INSERT INTO process_define (code, user_id, name, version, content)
-		VALUES (:code, :name, :version, :content)`, meta)
+		VALUES (:code, :user_id, :name, :version, :content)`, meta)
 	if err != nil {
 		return 0, err
 	}
@@ -73,7 +73,7 @@ type MySQLProcessInstanceStore struct{}
 func (s *MySQLProcessInstanceStore) CreateProcessInstance(meta *model.ProcessInstanceModel) (int, error) {
 	result, err := serctx.SerCtx.Db.Exec(`
 		INSERT INTO process_instance (process_define_id, user_id, status, variables)
-		VALUES (?, ?, ?)`, meta.ProcessDefineID, meta.UserID, meta.Status, meta.Variables)
+		VALUES (?, ?, ?, ?)`, meta.ProcessDefineID, meta.UserID, meta.Status, meta.Variables)
 	if err != nil {
 		return 0, err
 	}
@@ -121,7 +121,7 @@ func (s *MySQLProcessTaskStore) FinishProcessTask(id int, userId int, variables 
 	if err != nil {
 		return err
 	}
-	_, err = serctx.SerCtx.Db.Exec("UPDATE process_task SET status = ?, user_id = ? variables = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, userId, string(variablesBytes), id)
+	_, err = serctx.SerCtx.Db.Exec("UPDATE process_task SET status = ?, user_id = ?, variables = ? WHERE id = ?", constants.PROCESSTASKSTATUSFINISH, userId, string(variablesBytes), id)
 	return err
 }
 func (s *MySQLProcessTaskStore) GetProcessTask(id int) (*model.ProcessTaskModel, error) {

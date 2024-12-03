@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"net/http"
 	"workflow/internal/common"
 	"workflow/internal/handler"
 
@@ -8,6 +9,11 @@ import (
 )
 
 func SetRoutes(r *gin.Engine) {
+
+	r.NoRoute(func(c *gin.Context) {
+		rsp := &common.Result{}
+		c.JSON(http.StatusOK, rsp.Error(common.SystemError, "接口不存在"))
+	})
 
 	// 拦截器
 	interceptionRouter := r.Group("workflow/interception/v1")

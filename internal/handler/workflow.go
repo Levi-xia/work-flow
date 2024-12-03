@@ -112,6 +112,11 @@ func ExecuteTask(c *gin.Context) {
 		process  *process.Process
 		err      error
 	)
+	uid, err := utils.StringToInt(c.GetString(constants.ACCESSTOKENUSERIDKEY))
+	if err != nil {
+		c.JSON(http.StatusOK, rsp.Error(common.ParamError, "get uid failed"))
+		return
+	}
 	// 拿到定义
 	if task.Meta, err = service.GetProcessTask(form.TaskId); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
@@ -140,6 +145,7 @@ func ExecuteTask(c *gin.Context) {
 		Define:    define,
 		Instance:  instance,
 		Variables: form.Variables,
+		UserID:    uid,
 	}
 	if err = e.ExecuteTask(task); err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
