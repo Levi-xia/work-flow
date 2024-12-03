@@ -3,11 +3,13 @@ package handler
 import (
 	"net/http"
 	"workflow/internal/common"
+	"workflow/internal/constants"
 	"workflow/internal/core/engine"
 	"workflow/internal/core/parser"
 	"workflow/internal/core/process"
 	"workflow/internal/core/service"
 	"workflow/internal/dto"
+	"workflow/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +22,12 @@ func CreateProcessDefine(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
-	processDefine, err := service.NewProcessDefine(1000, form.Content)
+	uid, err := utils.StringToInt(c.GetString(constants.ACCESSTOKENUSERIDKEY))
+	if err != nil {
+		c.JSON(http.StatusOK, rsp.Error(common.ParamError, "get uid failed"))
+		return
+	}
+	processDefine, err := service.NewProcessDefine(uid, form.Content)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
@@ -41,6 +48,11 @@ func StartProcessInstance(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
+	uid, err := utils.StringToInt(c.GetString(constants.ACCESSTOKENUSERIDKEY))
+	if err != nil {
+		c.JSON(http.StatusOK, rsp.Error(common.ParamError, "get uid failed"))
+		return
+	}
 	defineMeta, err := service.GetProcessDefine(form.ProcessDefineId)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
@@ -57,7 +69,7 @@ func StartProcessInstance(c *gin.Context) {
 	if form.Variables == nil {
 		form.Variables = make(map[string]interface{})
 	}
-	instance, err := service.NewProcessInstance(define, 1000, form.Variables)
+	instance, err := service.NewProcessInstance(define, uid, form.Variables)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return
