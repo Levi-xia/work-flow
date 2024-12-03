@@ -9,6 +9,7 @@ type ActionDefineBo struct {
 	ID           int                      `json:"id"`
 	Name         string                   `json:"name"`
 	Code         string                   `json:"code"`
+	UserID       int                      `json:"user_id"`
 	Version      int                      `json:"version"`
 	Protocol     constants.ActionProtocol `json:"protocol"`
 	Content      ActionContent            `json:"content"`
@@ -19,13 +20,13 @@ type ActionDefineBo struct {
 }
 
 type ActionRecordBo struct {
-	ID                int                    `json:"id"`
-	ActionDefineID    int                    `json:"action_define_id"`
-	ProcessTaskID     int                    `json:"process_task_id"`
-	Input             map[string]interface{} `json:"input"`
-	Output            map[string]interface{} `json:"output"`
-	CreatedAt         time.Time              `json:"created_at"`
-	UpdatedAt         time.Time              `json:"updated_at"`
+	ID             int                    `json:"id"`
+	ActionDefineID int                    `json:"action_define_id"`
+	ProcessTaskID  int                    `json:"process_task_id"`
+	Input          map[string]interface{} `json:"input"`
+	Output         map[string]interface{} `json:"output"`
+	CreatedAt      time.Time              `json:"created_at"`
+	UpdatedAt      time.Time              `json:"updated_at"`
 }
 
 type ParamsStruct struct {

@@ -16,7 +16,7 @@ type ProcessDefine struct {
 }
 
 // NewProcessDefine 用于创建一个新的流程定义
-func NewProcessDefine(content string) (*ProcessDefine, error) {
+func NewProcessDefine(userId int, content string) (*ProcessDefine, error) {
 	var (
 		err         error
 		process     *process.Process
@@ -40,6 +40,7 @@ func NewProcessDefine(content string) (*ProcessDefine, error) {
 	}
 	defineModel = &model.ProcessDefineModel{
 		Code:    process.Code,
+		UserID:  userId,
 		Name:    process.Name,
 		Content: compactContent,
 		Version: 1,

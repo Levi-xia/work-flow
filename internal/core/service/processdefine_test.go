@@ -114,7 +114,7 @@ func TestCreateProcessDefine(t *testing.T) {
 			}
 		]
 	}`
-	processDefine, err := NewProcessDefine(str)
+	processDefine, err := NewProcessDefine(1, str)
 	if err != nil {
 		t.Fatal(err)
 	}

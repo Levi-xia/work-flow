@@ -55,8 +55,8 @@ func GetProcessTask(taskId int) (*bo.ProcessTaskBo, error) {
 	return taskModel.ToBo()
 }
 
-func FinishProcessTask(taskId int, variables map[string]interface{}) error {
-	return store.GetProcessTaskStore().FinishProcessTask(taskId, variables)
+func FinishProcessTask(taskId, userId int, variables map[string]interface{}) error {
+	return store.GetProcessTaskStore().FinishProcessTask(taskId, userId, variables)
 }
 
 func GetRunningTasks(instance *ProcessInstance) ([]*bo.ProcessTaskBo, error) {

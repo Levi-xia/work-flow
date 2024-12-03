@@ -81,7 +81,7 @@ func (e *Execution) ExecuteTask(task *service.ProcessTask) error {
 		return err
 	}
 	// 结束任务写库
-	if err := service.FinishProcessTask(task.Meta.ID, e.Variables); err != nil {
+	if err := service.FinishProcessTask(task.Meta.ID, e.UserID, e.Variables); err != nil {
 		return err
 	}
 	// 更新instance的变量

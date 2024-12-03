@@ -14,7 +14,7 @@ type ActionDefine struct {
 }
 
 // 创建ActionDefine
-func NewActionDefine(name, code, protocol string, content *bo.ActionContent,
+func NewActionDefine(userId int, name, code, protocol string, content *bo.ActionContent,
 	inputStructs []*bo.ParamsStruct, outputChecks []*bo.OutputCheck) (*ActionDefine, error) {
 
 	var (
@@ -38,6 +38,7 @@ func NewActionDefine(name, code, protocol string, content *bo.ActionContent,
 	defineModel = &model.ActionDefineModel{
 		Name:         name,
 		Code:         code,
+		UserID:       userId,
 		Protocol:     protocol,
 		Content:      string(contentBytes),
 		Version:      1,

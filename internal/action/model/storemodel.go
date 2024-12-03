@@ -12,6 +12,7 @@ type ActionDefineModel struct {
 	ID           int    `json:"id" db:"id"`
 	Name         string `json:"name" db:"name"`
 	Code         string `json:"code" db:"code"`
+	UserID       int    `json:"user_id" db:"user_id"`
 	Version      int    `json:"version" db:"version"`
 	Protocol     string `json:"protocol" db:"protocol"`
 	Content      string `json:"content" db:"content"`
@@ -49,6 +50,7 @@ func (this *ActionDefineModel) ToBo() (*bo.ActionDefineBo, error) {
 		ID:           this.ID,
 		Name:         this.Name,
 		Code:         this.Code,
+		UserID:       this.UserID,
 		Version:      this.Version,
 		Protocol:     constants.ActionProtocol(this.Protocol),
 		Content:      content,

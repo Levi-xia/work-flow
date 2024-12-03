@@ -11,6 +11,7 @@ type FormDefineModel struct {
 	ID                 int    `json:"id"`
 	Name               string `json:"name" db:"name"`
 	Code               string `json:"code" db:"code"`
+	UserID             int    `json:"user_id" db:"user_id"`
 	FormStructure      string `json:"form_structure" db:"form_structure"`
 	ComponentStructure string `json:"component_structure" db:"component_structure"`
 	Version            int    `json:"version" db:"version"`
@@ -38,6 +39,7 @@ func (this *FormDefineModel) ToBo() (*bo.FormDefineBo, error) {
 		ID:                 this.ID,
 		Name:               this.Name,
 		Code:               this.Code,
+		UserID:             this.UserID,
 		FormStructure:      this.FormStructure,
 		ComponentStructure: componentStructure,
 		Version:            this.Version,
@@ -48,7 +50,7 @@ func (this *FormDefineModel) ToBo() (*bo.FormDefineBo, error) {
 
 type FormInstanceModel struct {
 	ID           int
-	FormDefineID int `json:"form_define_id" db:"form_define_id"`
+	FormDefineID int    `json:"form_define_id" db:"form_define_id"`
 	FormData     string `json:"form_data" db:"form_data"`
 	CreatedAt    string `json:"created_at" db:"created_at"`
 	UpdatedAt    string `json:"updated_at" db:"updated_at"`

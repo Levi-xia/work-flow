@@ -15,7 +15,7 @@ type ProcessInstance struct {
 }
 
 // 创建实例
-func NewProcessInstance(define *ProcessDefine, variables map[string]interface{}) (*ProcessInstance, error) {
+func NewProcessInstance(define *ProcessDefine, userId int, variables map[string]interface{}) (*ProcessInstance, error) {
 	var (
 		err            error
 		variablesBytes []byte
@@ -27,6 +27,7 @@ func NewProcessInstance(define *ProcessDefine, variables map[string]interface{})
 	}
 	instanceModel = &model.ProcessInstanceModel{
 		ProcessDefineID: define.Meta.ID,
+		UserID:          userId,
 		Status:          string(constants.PROCESSINSTANCESTATUSDOING),
 		Variables:       string(variablesBytes),
 	}

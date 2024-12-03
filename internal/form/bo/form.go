@@ -17,6 +17,7 @@ type FormDefineBo struct {
 	ID                 int         `json:"id"`
 	Name               string      `json:"name"`
 	Code               string      `json:"code"`
+	UserID             int         `json:"user_id"`
 	FormStructure      string      `json:"form_structure"`
 	ComponentStructure []Component `json:"component_structure"`
 	Version            int         `json:"version"`

@@ -110,7 +110,7 @@ func TestCreateFormDefine(t *testing.T) {
   }
 }`
 
-	define, err := NewFormDefine("请假通用表单", "leave_form", formStructure, componentStructure)
+	define, err := NewFormDefine(1, "请假通用表单", "leave_form", formStructure, componentStructure)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +203,7 @@ func TestCreateActionDefine2(t *testing.T) {
     }
   }
 }`
-	define, err := NewFormDefine("审批通用表单", "approval_form", formStructure, componentStructure)
+	define, err := NewFormDefine(1, "审批通用表单", "approval_form", formStructure, componentStructure)
 	if err != nil {
 		t.Fatal(err)
 	}

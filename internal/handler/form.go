@@ -16,7 +16,7 @@ func CreateFormDefine(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
-	define, err := service.NewFormDefine(form.Name, form.Code, form.FormStructure, form.ComponentStructure)
+	define, err := service.NewFormDefine(1000, form.Name, form.Code, form.FormStructure, form.ComponentStructure)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return

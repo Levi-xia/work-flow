@@ -40,8 +40,8 @@ type MySQLActionDefineStore struct{}
 
 func (s *MySQLActionDefineStore) CreateActionDefine(defineModel *model.ActionDefineModel) (int, error) {
 	result, err := serctx.SerCtx.Db.NamedExec(`
-		INSERT INTO action_define (code, name, version, protocol, content, input_structs, output_checks)
-		VALUES (:code, :name, :version, :protocol, :content, :input_structs, :output_checks)`, defineModel)
+		INSERT INTO action_define (code, name, user_id, version, protocol, content, input_structs, output_checks)
+		VALUES (:code, :name, :user_id, :version, :protocol, :content, :input_structs, :output_checks)`, defineModel)
 	if err != nil {
 		return 0, err
 	}

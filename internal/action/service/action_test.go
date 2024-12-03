@@ -23,7 +23,7 @@ func TestExecuteActions(t *testing.T) {
 
 func TestCreateActionDefine(t *testing.T) {
 	serctx.InitServerContext()
-	define, err := NewActionDefine("通用请假action", "leave", "http", &bo.ActionContent{
+	define, err := NewActionDefine(1, "通用请假action", "leave", "http", &bo.ActionContent{
 		HttpAction: bo.HttpAction{
 			Url:     "http://127.0.0.1:8080/workflow/action/v1/sendSms",
 			Method:  constants.HttpMethodGet,

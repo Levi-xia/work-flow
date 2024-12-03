@@ -37,8 +37,8 @@ type MySQLFormDefineStore struct{}
 
 func (s *MySQLFormDefineStore) CreateFormDefine(meta *model.FormDefineModel) (int, error) {
 	result, err := serctx.SerCtx.Db.NamedExec(`
-		INSERT INTO form_define (code, name, version, form_structure, component_structure)
-		VALUES (:code, :name, :version, :form_structure, :component_structure)`, meta)
+		INSERT INTO form_define (code, name, user_id, version, form_structure, component_structure)
+		VALUES (:code, :name, :user_id, :version, :form_structure, :component_structure)`, meta)
 	if err != nil {
 		return 0, err
 	}

@@ -17,7 +17,7 @@ func CreateActionDefine(c *gin.Context) {
 		c.JSON(http.StatusOK, rsp.Error(common.ParamError, common.GetErrorMsg(form, err)))
 		return
 	}
-	define, err := service.NewActionDefine(form.Name, form.Code, form.Protocol, form.Content, form.InputStructs, form.OutputChecks)
+	define, err := service.NewActionDefine(1000, form.Name, form.Code, form.Protocol, form.Content, form.InputStructs, form.OutputChecks)
 	if err != nil {
 		c.JSON(http.StatusOK, rsp.Error(common.ServiceError, err.Error()))
 		return

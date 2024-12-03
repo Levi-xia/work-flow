@@ -19,7 +19,7 @@ func TestProcess(t *testing.T) {
 	variables := map[string]interface{}{
 		"days": 5,
 	}
-	instance, err := service.NewProcessInstance(define, variables)
+	instance, err := service.NewProcessInstance(define, 1, variables)
 	if err != nil {
 		t.Fatal(err)
 	}
